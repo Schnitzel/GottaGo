@@ -19,6 +19,40 @@ function gottago_test(){
   return "";
 }
 
+
+/**
+ * Implements hook_form_alter().
+ */
+function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
+  $form['field_station']['und'][0]['value']['#ajax'] = array(
+    'callback' => 'gottago_ajax_callback_field_station_select',
+    'wrapper' => 'gottago-line',
+    'event' => 'change',
+  );
+
+  $form['field_station']['#suffix'] = '<div id="gottago-line" class="gottago-line"></div>';
+  if (isset($form_state['values']['field_station']['und'][0]['value'])) {
+    $stationid = $form_state['values']['field_station']['und'][0]['value'];
+    $radio_options = gottago_get_lines_for_station($stationid);
+  }
+  if (isset($radio_options)) {
+    $form['field_line']['und']['#options'] = $radio_options;
+    $form['field_line']['#access'] = TRUE;
+    $form['field_line']['#prefix'] = '<div id="gottago-line" class="gottago-line">';
+    $form['field_line']['#suffix'] = '</div>';
+  } else {
+    $form['field_line']['#access'] = FALSE;
+  }
+}
+
+/**
+ * Ajax callback for loading the translator plugin settings form for the
+ * currently selected translator plugin.
+ */
+function gottago_ajax_callback_field_station_select($form, &$form_state) {
+  return $form['field_line'];
+}
+
 /**
  * Queries the TransportAPI for the given StationID and returns all Lines which
  * are running in the near future
@@ -30,7 +64,7 @@ function gottago_test(){
  *    An array of all liney in the near future.
  *    Key: linename|destination (lineidentifier)
  */
-function gottago_get_lines_for_station($stationid){
+function gottago_get_lines_for_station($stationid = FALSE){
 
   if (!isset($stationid) || !is_numeric($stationid)){
     return FALSE;
