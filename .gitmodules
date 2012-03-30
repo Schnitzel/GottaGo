@@ -1,3 +1,9 @@
 [submodule "sites/all/modules/devel"]
 	path = sites/all/modules/devel
 	url = git://git.drupal.org/project/devel.git
+[submodule "sites/all/modules/admin_menu"]
+	path = sites/all/modules/admin_menu
+	url = git://git.drupal.org/project/admin_menu.git
+[submodule "sites/all/modules/git_deploy"]
+	path = sites/all/modules/git_deploy
+	url = git://git.drupal.org/project/git_deploy.git
