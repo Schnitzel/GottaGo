@@ -1,0 +1,3 @@
+[submodule "sites/all/modules/devel"]
+	path = sites/all/modules/devel
+	url = git://git.drupal.org/project/devel.git
