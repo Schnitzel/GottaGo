@@ -19,6 +19,37 @@ function gottago_test(){
   return "";
 }
 
+
+/**
+ * Add output to the head tag of the HTML page.
+ *
+ * This function can be called as long the headers aren't sent. Pass no
+ * arguments (or NULL for both) to retrieve the currently stored elements.
+ *
+ * @param $data
+ *   A renderable array. If the '#type' key is not set then 'html_tag' will be
+ *   added as the default '#type'.
+ * @param $key
+ *   A unique string key to allow implementations of hook_html_head_alter() to
+ *   identify the element in $data. Required if $data is not NULL.
+ *
+ * @return
+ *   An array of all stored HEAD elements.
+ *
+ * @see theme_html_tag()
+ */
+
+/**
+ * Queries the TransportAPI for the given StationID and returns all Lines which
+ * are running in the near future
+ *
+ * @param $stationid
+ *    The stationid how TransportAPI would need it
+ *
+ * @return $lines
+ *    An array of all liney in the near future.
+ *    Key: linename|destination (lineidentifier)
+ */
 function gottago_get_lines_for_station($stationid){
 
   if (!isset($stationid) || !is_numeric($stationid)){
@@ -43,6 +74,18 @@ function gottago_get_lines_for_station($stationid){
   return $lines;
 }
 
+/**
+ * Queries the LocationAPI for the next departure of a line
+ * @param type $stationid
+ *    The stationid how TransportAPI would need it
+ * @param type $line_identifier
+ *    The Line Identifier as sent by gottago_get_lines_for_station()
+ * @param type $skip_results
+ *    How many results of the request should be skipped
+ *
+ * @return $remaining_seconds
+ *    Remaining seconds of the next departure
+ */
 function gottago_get_departure_in_seconds($stationid, $line_identifier, $skip_results = 0){
   $return = drupal_http_request("http://transport.opendata.ch/api.php/v1/stationboard?id=".$stationid);
   if ($return->code == 200) {
