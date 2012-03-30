@@ -14,7 +14,7 @@ function gottago_menu(){
 }
 
 function gottago_test(){
-  $return = gottago_get_next_departure_in_seconds('008580522', 'Tram 4|Zürich Altstetten, Bahnhof N');
+  $return = gottago_get_departure_in_seconds('008580522', 'Tram 4|Zürich Altstetten, Bahnhof N');
   dpm($return);
   return "";
 }
@@ -43,7 +43,7 @@ function gottago_get_lines_for_station($stationid){
   return $lines;
 }
 
-function gottago_get_next_departure_in_seconds($stationid, $line_identifier){
+function gottago_get_departure_in_seconds($stationid, $line_identifier, $skip_results = 0){
   $return = drupal_http_request("http://transport.opendata.ch/api.php/v1/stationboard?id=".$stationid);
   if ($return->code == 200) {
     $response = json_decode($return->data);
@@ -56,8 +56,12 @@ function gottago_get_next_departure_in_seconds($stationid, $line_identifier){
   $departure_time = FALSE;
   foreach ($response->stationboard as $key => $departure) {
     if ($line_name == $departure->name && $line_to == $departure->to) {
-      $departure_time = (isset($departure->stop->prognosis->time)) ? $departure->stop->prognosis->time : $departure->stop->departure;
-      break;
+      if ($skip_results == 0) {
+        $departure_time = (isset($departure->stop->prognosis->time)) ? $departure->stop->prognosis->time : $departure->stop->departure;
+        break;
+      } else {
+        $skip_results--;
+      }
     }
   }
   $departure_time = strtotime($departure_time);
