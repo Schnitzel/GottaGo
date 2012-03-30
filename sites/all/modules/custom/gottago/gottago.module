@@ -1,6 +1,8 @@
 <?php
 
 define('GOTTAGO_FIELD_STATION', 'field_station');
+define('GOTTAGO_FIELD_LINE', 'field_line');
+define('GOTTAGO_FIELD_DELAY', 'field_delay');
 
 /**
  * Implements hook_permission().
@@ -81,6 +83,7 @@ function gottago_api($type, $gottago_node) {
   $result = array();
   if (function_exists('gottago_api_' . $type)) {
     $return = call_user_func_array('gottago_api_' . $type, array($gottago_node));
+    dpm($return);
   }
   //drupal_json_output($return);
   //exit();
@@ -100,10 +103,25 @@ function gottago_api_go_status($gottago_node) {
 
   // Time to construct the json output out of the response.
   if ($query_result) {
-    dpm($query_result);
-    dpm($gottago_node);
     // To go or not to go?
-    $response['status'] = 'no_go';
+    $next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
+                                                       $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
+                                                       $query_result);
+    dpm($next_departure);
+    $response['status'] = gottago_get_departure_status($next_departure, $gottago_node);
+    // If the status is not go, it can happen that the status is go for the
+    // second next departure, so check also that.
+    if ($response['status'] !='go') {
+      $second_next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
+                                                       $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
+                                                       $query_result, 1);
+      dpm($second_next_departure);
+      $second_next_status = gottago_get_departure_status($second_next_departure, $gottago_node);
+      if ($second_next_status == 'go') {
+        $response['status'] = 'go';
+      }
+    }
+    
     // Status changes.
     $response['status_changes']['off'] = '210';
     $response['status_changes']['go'] = '120';
@@ -127,21 +145,62 @@ function gottago_api_query($params = array()) {
     'query' => $params,
   );
   $url = url(variable_get('gottago_stationboard_url', 'http://transport.opendata.ch/api.php/v1/stationboard'), $url_options);
-  dpm($url);
   // @todo: Catch and handle any http errors.
   $return = drupal_http_request($url);
   if ($return->code == 200) {
     return json_decode($return->data);
   }
+  watchdog("gottago", "Error while quering: " . $url . ". Error Code: ".$return->code . ". Error: ". $return->error, NULL);
   return FALSE;
 }
 
+/**
+ * @todo: document it.
+ */
+function gottago_get_departure_status($departure, $gottago_node) {
+  // The status is to go if the remaining time is between the number of
+  // seconds that the user spends walking and the number of seconds that the
+  // user spends walking + the On timeframe. So, if
+  // - delay = the number of seconds the user uses for walking.
+  // - go_timeframe = the number of seconds for the Go timeframe.
+  // - no_go_timeframe = the numebr of seconds for the No Go timeframe.
+  // - remaining_time = the remaining time
+  // then the status is go if: delay <= remaining_time <= delay + go_timeframe,
+  // that means: 0 <= remaining_time - delay <= go_timeframe.
+  if (0 <= $departure->remaining_seconds - $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] &&
+      $departure->remaining_seconds - $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] <= variable_get('gottago_go_status_timeframe', 60)) {
+      return 'go';
+  }
+  // @todo: if the status is no_go or off, check also the second one.
+  // @todo: make a custom function for this!
+  // The status is no_go if: remaining_time < delay AND delay - remaining_time < no_go_timefreame.
+  elseif ($departure->remaining_seconds < $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] &&
+        $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] - $departure->remaining_seconds < variable_get('gottago_no_go_status_timeframe', 30)) {
+        return 'no_go';
+  }
+  // In all other cases, the response is off.
+  else {
+    return 'off';
+  }
+}
+
 function gottago_test(){
-  $return = gottago_get_next_departure_in_seconds('008580522', 'Tram 4|Zürich Altstetten, Bahnhof N');
+  $return = gottago_get_departure('008580522', 'Tram 4|Zürich Altstetten, Bahnhof N');
   dpm($return);
   return "";
 }
 
+/**
+ * Queries the TransportAPI for the given StationID and returns all Lines which
+ * are running in the near future
+ *
+ * @param $stationid
+ *    The stationid how TransportAPI would need it
+ *
+ * @return $lines
+ *    An array of all liney in the near future.
+ *    Key: linename|destination (lineidentifier)
+ */
 function gottago_get_lines_for_station($stationid){
 
   if (!isset($stationid) || !is_numeric($stationid)){
@@ -152,11 +211,16 @@ function gottago_get_lines_for_station($stationid){
   if ($return->code == 200) {
     $response = json_decode($return->data);
   } else {
-    return FALSE;
+    watchdog("gottago", "Error while quering: http://transport.opendata.ch/api.php/v1/stationboard?id=" . $stationid . "
+      Error Code: ".$return->code . ". Error: ". $return->error);
+    return "no_api";
   }
-
-dpm($response);
   $lines = array();
+
+  /**
+   * There is no really possibility to get all lines for a station.
+   * So we just go through all departs and get the possible lines from it.
+   */
   foreach ($response->stationboard as $key => $departure) {
     $line_identifier = $departure->name . "|" . $departure->to;
     if (!in_array($line_identifier, $lines)) {
@@ -166,30 +230,65 @@ dpm($response);
   return $lines;
 }
 
-function gottago_get_next_departure_in_seconds($stationid, $line_identifier){
-  $return = drupal_http_request("http://transport.opendata.ch/api.php/v1/stationboard?id=".$stationid);
-  if ($return->code == 200) {
-    $response = json_decode($return->data);
-  } else {
-    return FALSE;
+/**
+ * Queries the LocationAPI for the next departure of a line
+ * @param type $stationid
+ *    The stationid how TransportAPI would need it
+ * @param type $line_identifier
+ *    The Line Identifier as sent by gottago_get_lines_for_station()
+ * @param type $skip_results
+ *    How many results of the request should be skipped
+ *
+ * @return object $remaining_object
+ *   The transportation object as it is defined in the api_response, but it will
+ *   contain additionally also the number of remaining seconds.
+ */
+function gottago_get_departure($stationid, $line_identifier, $api_response = NULL, $offset = 0){
+  // If we have no $api_response, generate one now.
+  if (!$api_response) {
+    $params['id'] = $stationid;
+    $api_response = gottago_api_query($params);
   }
-  $line_identifier = explode("|", $line_identifier);
-  $line_name = $line_identifier[0];
-  $line_to = $line_identifier[1];
-  $departure_time = FALSE;
-  foreach ($response->stationboard as $key => $departure) {
-    if ($line_name == $departure->name && $line_to == $departure->to) {
-      $departure_time = (isset($departure->stop->prognosis->time)) ? $departure->stop->prognosis->time : $departure->stop->departure;
-      break;
+  if ($api_response) {
+    // We use internally a pipe delimited line identifier, the API gives us this
+    // different.
+    $line_identifier = explode("|", $line_identifier);
+    $line_name = $line_identifier[0];
+    $line_to = $line_identifier[1];
+    $departure_time = FALSE;
+    $departure_object = NULL;
+
+    foreach ($api_response->stationboard as $key => $departure) {
+      // Is the found depart for the line we are searching for?
+      if ($line_name == $departure->name && $line_to == $departure->to) {
+        // Maybe we have to skip this result.
+        if ($offset == 0) {
+          $departure_time = (isset($departure->stop->prognosis->time)) ? $departure->stop->prognosis->time : $departure->stop->departure;
+          $departure_object = $departure;
+          break;
+        } else {
+          $offset--;
+        }
+      }
     }
+    if (!$departure_time) {
+      return "no_data";
+    }
+    // @todo: Maybe make some additional checks regarding the timezone if
+    // needed...
+    $departure_time = strtotime($departure_time);
+    $current_time = time();
+    // If the departure time is smaller then the current time, the departure
+    // time is probably in the future so we add a day. But, add also a delta,
+    // because the request can be performed in the same minute as the
+    // departure time, and this will result in adding a day when it is not
+    // necessary.
+    if ($departure_time + 120 < $current_time) {
+      $departure_time = $departure_time + (24 * 60 * 60);
+    }
+    $remaining_seconds = $departure_time - $current_time;
+    $departure_object->remaining_seconds = $remaining_seconds;
+    return $departure_object;
   }
-  $departure_time = strtotime($departure_time);
-  $current_time = time();
-  // if the departure time is smaller then the current time, the departure time is probably in the future
-  // so we add a day
-  if ($departure_time < $current_time) {
-    $departure_time = $departure_time + (24 * 60 * 60);
-  }
-  $remaining_seconds = $departure_time - $current_time;
-  return $remaining_seconds;
+  return FALSE;
 }
