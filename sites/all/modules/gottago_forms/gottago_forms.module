@@ -3,6 +3,8 @@
 function gottago_forms_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'gottago_node_form') {
     $form['field_station_name']['#type'] = 'hidden';
+    $form['field_last_update']['#type'] = 'hidden';
+    $form['field_last_device']['#type'] = 'hidden';
     $form['title']['#type'] = 'hidden';
     $form['title']['#required'] = FALSE;
   }
