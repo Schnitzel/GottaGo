@@ -1,0 +1,6 @@
+name = "GottaGo Forms"
+description = "Handles GottaGo Forms"
+core = 7.x
+
+files[] = gottago_forms.module
+

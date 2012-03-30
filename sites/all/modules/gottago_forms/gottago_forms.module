@@ -1,0 +1,27 @@
+<?php
+
+function gottago_forms_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'gottago_node_form') {
+    $form['field_station_name']['#type'] = 'hidden';
+    $form['title']['#type'] = 'hidden';
+    $form['title']['#required'] = FALSE;
+  }
+}
+
+function gottago_forms_node_presave($node) {
+  if($node->is_new){
+    do {
+      $identifier = user_password(4);
+    } while (_gottago_node_title_exists($identifier));
+    $node->title = $identifier;
+  }
+}
+
+function _gottago_node_title_exists($title) {
+  $query = new EntityFieldQuery();
+  $entities = $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'gottago')
+    ->propertyCondition('title', $title)
+    ->execute();
+  return count($entities);
+}
