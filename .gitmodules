@@ -13,3 +13,6 @@
 [submodule "sites/all/modules/ctools"]
 	path = sites/all/modules/ctools
 	url = git://git.drupal.org/project/ctools.git
+[submodule "sites/all/modules/email_registration"]
+	path = sites/all/modules/email_registration
+	url = git://git.drupal.org/project/email_registration.git
