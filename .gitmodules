@@ -16,3 +16,9 @@
 [submodule "sites/all/modules/email_registration"]
 	path = sites/all/modules/email_registration
 	url = git://git.drupal.org/project/email_registration.git
+[submodule "sites/all/modules/date"]
+	path = sites/all/modules/date
+	url = git://git.drupal.org/project/date.git
+[submodule "sites/all/modules/devel_themer"]
+	path = sites/all/modules/devel_themer
+	url = git://git.drupal.org/project/devel_themer.git
