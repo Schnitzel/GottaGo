@@ -7,3 +7,12 @@
 [submodule "sites/all/modules/git_deploy"]
 	path = sites/all/modules/git_deploy
 	url = git://git.drupal.org/project/git_deploy.git
+[submodule "sites/all/modules/views"]
+	path = sites/all/modules/views
+	url = git://git.drupal.org/project/views.git
+[submodule "sites/all/modules/ctools"]
+	path = sites/all/modules/ctools
+	url = git://git.drupal.org/project/ctools.git
+[submodule "sites/all/modules/email_registration"]
+	path = sites/all/modules/email_registration
+	url = git://git.drupal.org/project/email_registration.git
