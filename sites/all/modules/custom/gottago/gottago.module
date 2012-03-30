@@ -19,26 +19,6 @@ function gottago_test(){
   return "";
 }
 
-
-/**
- * Add output to the head tag of the HTML page.
- *
- * This function can be called as long the headers aren't sent. Pass no
- * arguments (or NULL for both) to retrieve the currently stored elements.
- *
- * @param $data
- *   A renderable array. If the '#type' key is not set then 'html_tag' will be
- *   added as the default '#type'.
- * @param $key
- *   A unique string key to allow implementations of hook_html_head_alter() to
- *   identify the element in $data. Required if $data is not NULL.
- *
- * @return
- *   An array of all stored HEAD elements.
- *
- * @see theme_html_tag()
- */
-
 /**
  * Queries the TransportAPI for the given StationID and returns all Lines which
  * are running in the near future
@@ -60,11 +40,17 @@ function gottago_get_lines_for_station($stationid){
   if ($return->code == 200) {
     $response = json_decode($return->data);
   } else {
-    return FALSE;
+    watchdog("gottago", "Error while quering: http://transport.opendata.ch/api.php/v1/stationboard?id=" . $stationid . "
+      Error Code: ".$return->code . ". Error: ". $return->error);
+    return "no_api";
   }
 
-
   $lines = array();
+
+  /**
+   * There is no really possibility to get all lines for a station.
+   * So we just go through all departs and get the possible lines from it.
+   */
   foreach ($response->stationboard as $key => $departure) {
     $line_identifier = $departure->name . "|" . $departure->to;
     if (!in_array($line_identifier, $lines)) {
@@ -91,14 +77,21 @@ function gottago_get_departure_in_seconds($stationid, $line_identifier, $skip_re
   if ($return->code == 200) {
     $response = json_decode($return->data);
   } else {
-    return FALSE;
+    watchdog("gottago", "Error while quering: http://transport.opendata.ch/api.php/v1/stationboard?id=" . $stationid . "
+      Error Code: ".$return->code . ". Error: ". $return->error);
+    return "no_api";
   }
+
+  // we use internally a pipe delimited line identifier, the API gives us this different.
   $line_identifier = explode("|", $line_identifier);
   $line_name = $line_identifier[0];
   $line_to = $line_identifier[1];
   $departure_time = FALSE;
+
   foreach ($response->stationboard as $key => $departure) {
+    // is the found depart for the line we are searching for?
     if ($line_name == $departure->name && $line_to == $departure->to) {
+      // maybe we have to skip this result.
       if ($skip_results == 0) {
         $departure_time = (isset($departure->stop->prognosis->time)) ? $departure->stop->prognosis->time : $departure->stop->departure;
         break;
@@ -106,6 +99,9 @@ function gottago_get_departure_in_seconds($stationid, $line_identifier, $skip_re
         $skip_results--;
       }
     }
+  }
+  if (!$departure_time) {
+    return "no_data";
   }
   $departure_time = strtotime($departure_time);
   $current_time = time();
