@@ -1,0 +1,48 @@
+{
+    /**
+     * Current status. See status changes for description.
+     * @type string
+     */
+    status: "no_go",
+    /**
+     * Relative times until next switch to status as identified by key.
+     * Values are given in seconds. Null values are permitted to signalize
+     * that the status is not known to be reached.
+     * @type object
+     */
+    status_changes: {
+        /**
+         * There is nothing to display. For example line is temporarily suspended.
+         * @type integer
+         */
+        off: null,
+        /**
+         * It should be signalized to the user that they should leave.
+         * @type integer
+         */
+        go: 783,
+        /**
+         * The user missed their configured leaving time.
+         * @type integer
+         */
+        no_go: 893
+    },
+    /**
+     * A hints for the interface when it makes sense to requery the status.
+     * The value is given the number in seconds until the sent information
+     * is expected to be valid.
+     * @type integer
+     */
+    next_refresh: 23424,
+    /**
+     * Error code as detected by the web service.
+     * It can take the following values:
+     * - "no_api": The web service claims that no transportation data is
+     *     available because the API is not reachable.
+     * - "not_configured": The device identifier is not yet configured.
+     * - "no_data": The transportation data is available but does hold
+     *     any data for the configured device identifier.
+     * @type string
+     */
+    error: null
+}

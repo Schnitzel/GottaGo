@@ -1,0 +1,72 @@
+<?php
+
+/**
+ * Implementation of hook_menu().
+ */
+function gottago_menu(){
+  $items['test'] = array(
+      'title' => 'Test',
+      'description' => 'Management of general issue settings',
+      'access arguments' => array('access content'),
+      'page callback' => 'gottago_test',
+  );
+  return $items;
+}
+
+function gottago_test(){
+  $return = gottago_get_next_departure_in_seconds('008580522', 'Tram 4|Zürich Altstetten, Bahnhof N');
+  dpm($return);
+  return "";
+}
+
+function gottago_get_lines_for_station($stationid){
+
+  if (!isset($stationid) || !is_numeric($stationid)){
+    return FALSE;
+  }
+
+  $return = drupal_http_request("http://transport.opendata.ch/api.php/v1/stationboard?id=".$stationid);
+  if ($return->code == 200) {
+    $response = json_decode($return->data);
+  } else {
+    return FALSE;
+  }
+
+
+  $lines = array();
+  foreach ($response->stationboard as $key => $departure) {
+    $line_identifier = $departure->name . "|" . $departure->to;
+    if (!in_array($line_identifier, $lines)) {
+      $lines[$line_identifier] = $departure->name . " " . t('direction:') . " " . $departure->to;
+    }
+  }
+  return $lines;
+}
+
+function gottago_get_next_departure_in_seconds($stationid, $line_identifier){
+  $return = drupal_http_request("http://transport.opendata.ch/api.php/v1/stationboard?id=".$stationid);
+  if ($return->code == 200) {
+    $response = json_decode($return->data);
+  } else {
+    return FALSE;
+  }
+  $line_identifier = explode("|", $line_identifier);
+  $line_name = $line_identifier[0];
+  $line_to = $line_identifier[1];
+  $departure_time = FALSE;
+  foreach ($response->stationboard as $key => $departure) {
+    if ($line_name == $departure->name && $line_to == $departure->to) {
+      $departure_time = (isset($departure->stop->prognosis->time)) ? $departure->stop->prognosis->time : $departure->stop->departure;
+      break;
+    }
+  }
+  $departure_time = strtotime($departure_time);
+  $current_time = time();
+  // if the departure time is smaller then the current time, the departure time is probably in the future
+  // so we add a day
+  if ($departure_time < $current_time) {
+    $departure_time = $departure_time + (24 * 60 * 60);
+  }
+  $remaining_seconds = $departure_time - $current_time;
+  return $remaining_seconds;
+}
