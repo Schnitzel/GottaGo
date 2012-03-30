@@ -1,5 +1,18 @@
 <?php
 
+define('GOTTAGO_FIELD_STATION', 'field_station');
+
+/**
+ * Implements hook_permission().
+ */
+function gottago_permission() {
+  return array(
+    'administer gottago api' => array(
+      'title' => t('Administer GottaGo API'),
+    ),
+  );
+}
+
 /**
  * Implementation of hook_menu().
  */
@@ -10,7 +23,117 @@ function gottago_menu(){
       'access arguments' => array('access content'),
       'page callback' => 'gottago_test',
   );
+  $items['gottago_status/%gottago'] = array(
+    'title' => 'GottaGo Status',
+    'access callback' => TRUE,
+    'page callback' => 'gottago_api',
+    'page arguments' => array('go_status', 1),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/system/gottago_api'] = array(
+    'title' => 'GottaGo API',
+    'description' => 'Configure the GottaGO API settings',
+    'access arguments' => array('administer gottago api'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gottago_admin'),
+    'file' => 'gottago.admin.inc',
+  );
   return $items;
+}
+
+/**
+ * Magic placeholder for %gottago
+ * 
+ * @param string $id
+ *  The id of the gottago node, that is the title of the node.
+ * 
+ * @return object
+ *  The gottago node object, or FALSE if the node id was not found.
+ */
+function gottago_load($id) {
+  $result = db_select('node', 'n')->fields('n', array('nid'))
+          ->condition('n.type', 'gottago')->condition('n.title', $id)
+          ->range(0, 1)->execute()->fetchField();
+  // Do not return FALSE here because in this case the response will be 404 web
+  // page, and we do not want that. The response must always a json formatted
+  // string, and there we will put any other errors. So, if the node could not
+  // be found, just return NULL.
+  if ($result) {
+    $node = node_load($result);
+    if ($node) {
+      return $node;
+    }
+  }
+  return NULL;
+}
+
+/**
+ * Entry point for the gottago API.
+ * 
+ * @param string $type
+ *  The type of the operation to call. Valid values so far:
+ *   - go_status: used to return "yes" or "no", if the user will catch the next
+ *     transport.
+ */
+function gottago_api($type, $gottago_node) {
+  // @todo: handle errors here, like checking the gottago node to be valid,
+  // because this is not done in the magic placeholder function.
+  $result = array();
+  if (function_exists('gottago_api_' . $type)) {
+    $return = call_user_func_array('gottago_api_' . $type, array($gottago_node));
+  }
+  //drupal_json_output($return);
+  //exit();
+  return array('#markup' => 'test');
+}
+
+/**
+ * Api function to get the status of the next way of transport.
+ * 
+ * @return @todo document the return.
+ */
+function gottago_api_go_status($gottago_node) {
+  // Prepare the data to query the API.
+  $params['id'] = $gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'];
+  $query_result = gottago_api_query($params);
+  $response = array();
+
+  // Time to construct the json output out of the response.
+  if ($query_result) {
+    dpm($query_result);
+    dpm($gottago_node);
+    // To go or not to go?
+    $response['status'] = 'no_go';
+    // Status changes.
+    $response['status_changes']['off'] = '210';
+    $response['status_changes']['go'] = '120';
+    $response['status_changes']['no_go'] = '180';
+    // Next refresh
+    $response['next_refresh'] = '23345';
+  }
+  // @todo: handle the errors.
+  return $response;
+}
+
+/**
+ * Queries the Transport API and returns the data.
+ * 
+ * @param array $params
+ *  An array of params that will be used in the query string.
+ */
+function gottago_api_query($params = array()) {
+  $url_options = array(
+    'external' => TRUE,
+    'query' => $params,
+  );
+  $url = url(variable_get('gottago_stationboard_url', 'http://transport.opendata.ch/api.php/v1/stationboard'), $url_options);
+  dpm($url);
+  // @todo: Catch and handle any http errors.
+  $return = drupal_http_request($url);
+  if ($return->code == 200) {
+    return json_decode($return->data);
+  }
+  return FALSE;
 }
 
 function gottago_test(){
@@ -32,7 +155,7 @@ function gottago_get_lines_for_station($stationid){
     return FALSE;
   }
 
-
+dpm($response);
   $lines = array();
   foreach ($response->stationboard as $key => $departure) {
     $line_identifier = $departure->name . "|" . $departure->to;
