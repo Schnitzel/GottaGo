@@ -92,10 +92,8 @@ function gottago_status($gottago_node = NULL) {
       }
     }
   }
-  //drupal_json_output($result);
-  //exit();
-  dpm($result);
-  return array('#markup' => 'test');
+  drupal_json_output($result);
+  exit();
 }
 
 /**
@@ -347,7 +345,10 @@ function gottago_get_next_refresh($second_next_departure, $gottago_node, $next_d
   $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
   $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
   $next_refresh_timeframe = variable_get('gottago_refresh_timeframe', 60);
-  return max($second_next_departure->remaining_seconds - $delay - $go_timeframe - $next_refresh_timeframe, 0);
+  if ($next_departure->seconds_remaining - $delay - $go_timeframe - $next_refresh_timeframe > 0) {
+    return $next_departure->seconds_remaining - $delay - $go_timeframe - $next_refresh_timeframe;
+  }
+  return max($second_next_departure->remaining_seconds - $delay - $go_timeframe - $next_refresh_timeframe, 5);
 }
 
 /**

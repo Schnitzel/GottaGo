@@ -1,0 +1,4 @@
+name = GottaGo client
+description = A client for the GottaGo module
+dependencies[] = gottago
+core = 7.x
