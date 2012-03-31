@@ -109,11 +109,11 @@ function gottago_status($gottago_node = NULL, $response = "json") {
 }
 
 function gottago_convert_csv($result){
-  $return = $result->status . ";";
-  $return .= $result->status_changes['go'] . ";";
-  $return .= $result->status_changes['nogo'] . ";";
-  $return .= $result->status_changes['off'] . ";";
-  $return .= $result->next_refresh->off . ";";
+  $return = $result['status'] . ";";
+  $return .= $result['status_changes']['go'] . ";";
+  $return .= $result['status_changes']['nogo'] . ";";
+  $return .= $result['status_changes']['off'] . ";";
+  $return .= $result['next_refresh'] . ";";
   return $return;
 }
 
