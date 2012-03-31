@@ -7,6 +7,7 @@ function gottago_forms_form_alter(&$form, &$form_state, $form_id) {
     $form['field_last_device']['#type'] = 'hidden';
     $form['title']['#type'] = 'hidden';
     $form['title']['#required'] = FALSE;
+    $form['actions']['submit']['#submit'][] = 'gottago_forms_redirect_submit';
   }
 }
 
@@ -26,4 +27,8 @@ function _gottago_node_title_exists($title) {
     ->propertyCondition('title', $title)
     ->execute();
   return count($entities);
+}
+
+function gottago_forms_redirect_submit($form, &$form_state) {
+  $form_state['redirect'] = '<front>';
 }
