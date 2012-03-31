@@ -72,18 +72,29 @@ function gottago_load($id) {
  *     transport.
  */
 function gottago_api($type, $gottago_node) {
-  // @todo: handle errors here, like checking the gottago node to be valid,
-  // because this is not done in the magic placeholder function.
-  $result = array();
-  if (function_exists('gottago_api_' . $type)) {
+  // @todo: it would be nice to use exceptions here...
+  $return = array();
+  if (!is_object($gottago_node)) {
+    $return['error'] = 'not_configured';
+    ob_start();
+    echo '<pre>';
+    print_r($gottago_node);
+    $output = ob_get_clean();
+    watchdog("gottago", "Calling the GottaGo API (" . $type .  ") with a wrong gottago_node object: " . $output, NULL, WATCHDOG_ERROR);
+  }
+  elseif (function_exists('gottago_api_' . $type)) {
     $return = call_user_func_array('gottago_api_' . $type, array($gottago_node));
+  }
+  else {
+    $return['error'] = 'no_api';
+    watchdog("gottago", "Calling the GottaGo API with a non-existing type: @type" , array('@type' => $type), WATCHDOG_ERROR);
   }
   drupal_json_output($return);
   exit();
 }
 
 /**
- * Api function to get the status of the next way of transport.
+ * Api function to get the status of the next departure.
  * 
  * @return @todo document the return.
  */
@@ -95,27 +106,35 @@ function gottago_api_go_status($gottago_node) {
 
   // Time to construct the json output out of the response.
   if ($query_result) {
-    // To go or not to go?
     $next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
                                                        $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
                                                        $query_result);
-    $second_next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
-                                                       $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
-                                                       $query_result, 1);
-    $response['status'] = gottago_get_departure_status($next_departure, $gottago_node);
-    // If the status is not go, it can happen that the status is go for the
-    // second next departure, so check also that.
-    if ($response['status'] !='go') {
-      $second_next_status = gottago_get_departure_status($second_next_departure, $gottago_node);
-      if ($second_next_status == 'go') {
-        $response['status'] = 'go';
+    // If there is no next departure, stop here, and just return the error.
+    if (is_object($next_departure)) {
+      $second_next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
+                                                         $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
+                                                         $query_result, 1);
+      // To go or not to go?
+      $response['status'] = gottago_get_departure_status($next_departure, $gottago_node);
+      // If the status is not go, it can happen that the status is go for the
+      // second next departure, so check also that.
+      if ($response['status'] !='go') {
+        $second_next_status = gottago_get_departure_status($second_next_departure, $gottago_node);
+        if ($second_next_status == 'go') {
+          $response['status'] = 'go';
+        }
       }
+      // Status changes and the next refresh.
+      $response['status_changes'] = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+      $response['next_refresh'] = gottago_get_next_refresh($second_next_departure, $gottago_node, $next_departure);
     }
-    // Status changes and the next refresh.
-    $response['status_changes'] = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
-    $response['next_refresh'] = gottago_get_next_refresh($second_next_departure, $gottago_node, $next_departure);
+    else {
+      $response = array('error' => 'no_data');
+    }
   }
-  // @todo: handle the errors.
+  else {
+    $response = array('error' => 'no_api');
+  }
   return $response;
 }
 
@@ -177,16 +196,43 @@ function gottago_get_departure_status($departure, $gottago_node) {
  */
 function gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node) {
   // @todo: document why this is like that!
-  // @todo: when the departures are not known, return false.
   $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
   $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
   $no_go_timeframe = variable_get('gottago_no_go_status_timeframe', 30);
-  $statuses['go'] = ($next_departure->remaining_seconds - $delay - $go_timeframe > 0)?$next_departure->remaining_seconds - $delay - $go_timeframe:
-                                                                                      $second_next_departure->remaining_seconds - $delay - $go_timeframe;
-  $statuses['no_go'] = ($next_departure->remaining_seconds - $delay > 0)?$next_departure->remaining_seconds - $delay:
-                                                                         $second_next_departure->remaining_seconds - $delay;
-  $statuses['off'] = ($next_departure->remaining_seconds - $delay + $no_go_timeframe > 0)?$next_departure->remaining_seconds - $delay + $no_go_timeframe:
-                                                                                      $second_next_departure->remaining_seconds - $delay + $no_go_timeframe;
+  // If the next departure is FALSE or no_data, all the statuses are NULL.
+  if (!$next_departure || is_string($next_departure)) {
+    return array('go' => NULL, 'no_go' => NULL, 'off' => NULL);
+  }
+  // GO status.
+  if ($seconds = $next_departure->remaining_seconds - $delay - $go_timeframe > 0) {
+    $statuses['go'] = $seconds;
+  }
+  elseif (is_object($second_next_departure)) {
+    $statuses['go'] = $second_next_departure->remaining_seconds - $delay - $go_timeframe;
+  }
+  else {
+    $statuses['go'] = NULL;
+  }
+  // NO GO status.
+  if ($seconds = $next_departure->remaining_seconds - $delay > 0) {
+    $statuses['no_go'] = $seconds;
+  }
+  elseif (is_object($second_next_departure)) {
+    $statuses['no_go'] = $second_next_departure->remaining_seconds - $delay;
+  }
+  else {
+    $statuses['no_go'] = NULL;
+  }
+  // OFF status.
+  if ($seconds = $next_departure->remaining_seconds - $delay + $no_go_timeframe > 0) {
+    $statuses['off'] = $seconds;
+  }
+  elseif (is_object($second_next_departure)) {
+    $statuses['off'] = $second_next_departure->remaining_seconds - $delay + $no_go_timeframe;
+  }
+  else {
+    $statuses['off'] = NULL;
+  }
   return $statuses;
 }
 
@@ -194,6 +240,9 @@ function gottago_get_next_statuses($next_departure, $second_next_departure, $got
  * @todo: document it.
  */
 function gottago_get_next_refresh($second_next_departure, $gottago_node, $next_departure) {
+  if (!is_object($second_next_departure)) {
+    return 0;
+  }
   $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
   $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
   $next_refresh_timeframe = variable_get('gottago_refresh_timeframe', 60);
