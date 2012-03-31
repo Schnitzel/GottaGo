@@ -25,11 +25,11 @@ function gottago_menu(){
     'page callback' => 'gottago_status',
     'type' => MENU_CALLBACK,
   );
-  $items['gottago_status/%gottago'] = array(
+  $items['gottago_status/%gottago/%'] = array(
     'title' => 'GottaGo Status',
     'access callback' => TRUE,
     'page callback' => 'gottago_status',
-    'page arguments' => array(1),
+    'page arguments' => array(1, 2),
     'type' => MENU_CALLBACK,
   );
   $items['admin/config/system/gottago_api'] = array(
@@ -71,10 +71,10 @@ function gottago_load($id) {
 
 /**
  * Returns the status of a gottago node.
- * 
+ *
  * If the node is not specified, it tries to load the ids from $_GET.
  */
-function gottago_status($gottago_node = NULL) {
+function gottago_status($gottago_node = NULL, $response = "json") {
   // If we have the gottago node, print the result only for it.
   $result = array();
   if (!is_null($gottago_node)) {
@@ -92,8 +92,26 @@ function gottago_status($gottago_node = NULL) {
       }
     }
   }
-  drupal_json_output($result);
-  exit();
+
+  switch ($response) {
+    case 'json':
+    default:
+      drupal_json_output($result);
+      exit;
+
+    case 'csv':
+      print gottago_convert_csv($result);
+      exit;
+  }
+}
+
+function gottago_convert_csv($result){
+  $return = $result['status'] . ";";
+  $return .= $result['status_changes']['go'] . ";";
+  $return .= $result['status_changes']['no_go'] . ";";
+  $return .= $result['status_changes']['off'] . ";";
+  $return .= $result['next_refresh'] . ";";
+  return $return;
 }
 
 /**
