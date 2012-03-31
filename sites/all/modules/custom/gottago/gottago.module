@@ -417,7 +417,7 @@ function gottago_get_departure($stationid, $line_identifier, $api_response = NUL
     // needed...
     $departure_time = strtotime($departure_time);
     $current_time = time();
-    $remaining_seconds = $departure_time - ($current_time+86240);
+    $remaining_seconds = $departure_time - ($current_time+86000);
     $departure_object->remaining_seconds = $remaining_seconds;
     return $departure_object;
   }
