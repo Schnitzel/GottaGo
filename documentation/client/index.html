@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>GottaGo</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style type="text/css">
+            #status_indicator {
+                display:none;
+                font-size: 5em;
+                background: #eee;
+                border: 1px solid #666;
+                padding:0.25em;
+                margin: 1em;
+            }
+            #status_indicator.error {
+                 background: red;
+            }
+            #status_indicator.off {}
+            #status_indicator.go {
+                background:lightgreen;
+            }
+            #status_indicator.no_go {
+                background:lightcoral;
+            }
+        </style>
+    </head>
+    <body>
+        <form action="webservice.php">
+            <label>
+                Schlüssel
+                <input type="text" name="device_identifier">
+            </label>
+            <button>Status anfragen</button>
+        </form>
+        <div id="status_indicator"></div>
+        <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="statusquery.js"></script>
+        <script type="text/javascript">
+(function(){
+        var gottaGo = new GottaGo($('#status_indicator'), function requery(){
+            $('form').submit();
+        });
+        
+        $(document).ready(function(){
+            $('input[name="device_identifier"]').val(
+                localStorage.device_identifier || ''
+            );
+        });
+        $('form').submit(function(e){
+            var form = $(this);
+            
+            e.preventDefault();
+            
+            localStorage.device_identifier = $('input[name="device_identifier"]').val();
+            
+            $.ajax({
+                url: form.attr('action'),
+                data: form.serialize(),
+                dataType: 'json'
+            }).done(gottaGo.parseResponse).fail(gottaGo.handleRequestError);
+        });
+})();
+        </script>
+    </body>
+</html>
