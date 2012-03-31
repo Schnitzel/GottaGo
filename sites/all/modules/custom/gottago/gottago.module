@@ -25,7 +25,7 @@ function gottago_menu(){
     'page callback' => 'gottago_status',
     'type' => MENU_CALLBACK,
   );
-  $items['gottago_status/%gottago/%'] = array(
+  $items['gottago_status/%gottago'] = array(
     'title' => 'GottaGo Status',
     'access callback' => TRUE,
     'page callback' => 'gottago_status',

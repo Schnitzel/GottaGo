@@ -51,7 +51,7 @@ function GottaGo(status_indicator, query_service){
         off: function handle_off(json){
             if(!isNaN(json.status_changes.go)) {
                 var minutesUntilGo = Math.round(json.status_changes.go/60);
-                status_indicator.text(" Noch "+minutesUntilGo+" Minuten.").show();
+                status_indicator.text("").show();
             }
         }
     };
