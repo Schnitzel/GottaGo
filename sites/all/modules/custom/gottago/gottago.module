@@ -19,12 +19,6 @@ function gottago_permission() {
  * Implementation of hook_menu().
  */
 function gottago_menu(){
-  $items['test'] = array(
-      'title' => 'Test',
-      'description' => 'Management of general issue settings',
-      'access arguments' => array('access content'),
-      'page callback' => 'gottago_test',
-  );
   $items['gottago_status/%gottago'] = array(
     'title' => 'GottaGo Status',
     'access callback' => TRUE,
@@ -83,11 +77,9 @@ function gottago_api($type, $gottago_node) {
   $result = array();
   if (function_exists('gottago_api_' . $type)) {
     $return = call_user_func_array('gottago_api_' . $type, array($gottago_node));
-    dpm($return);
   }
-  //drupal_json_output($return);
-  //exit();
-  return array('#markup' => 'test');
+  drupal_json_output($return);
+  exit();
 }
 
 /**
@@ -110,23 +102,18 @@ function gottago_api_go_status($gottago_node) {
     $second_next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
                                                        $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
                                                        $query_result, 1);
-    dpm($next_departure);
     $response['status'] = gottago_get_departure_status($next_departure, $gottago_node);
     // If the status is not go, it can happen that the status is go for the
     // second next departure, so check also that.
     if ($response['status'] !='go') {
-      dpm($second_next_departure);
       $second_next_status = gottago_get_departure_status($second_next_departure, $gottago_node);
       if ($second_next_status == 'go') {
         $response['status'] = 'go';
       }
     }
-    
-    // Status changes.
+    // Status changes and the next refresh.
     $response['status_changes'] = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
-    
-    // Next refresh
-    $response['next_refresh'] = '23345';
+    $response['next_refresh'] = gottago_get_next_refresh($second_next_departure, $gottago_node, $next_departure);
   }
   // @todo: handle the errors.
   return $response;
@@ -190,6 +177,7 @@ function gottago_get_departure_status($departure, $gottago_node) {
  */
 function gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node) {
   // @todo: document why this is like that!
+  // @todo: when the departures are not known, return false.
   $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
   $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
   $no_go_timeframe = variable_get('gottago_no_go_status_timeframe', 30);
@@ -202,50 +190,14 @@ function gottago_get_next_statuses($next_departure, $second_next_departure, $got
   return $statuses;
 }
 
-function gottago_test(){
-  $return = gottago_get_departure('008580522', 'Tram 4|Zürich Altstetten, Bahnhof N');
-  dpm($return);
-  return "";
-}
-
 /**
- * Queries the TransportAPI for the given StationID and returns all Lines which
- * are running in the near future
- *
- * @param $stationid
- *    The stationid how TransportAPI would need it
- *
- * @return $lines
- *    An array of all liney in the near future.
- *    Key: linename|destination (lineidentifier)
+ * @todo: document it.
  */
-function gottago_get_lines_for_station($stationid){
-
-  if (!isset($stationid) || !is_numeric($stationid)){
-    return FALSE;
-  }
-
-  $return = drupal_http_request("http://transport.opendata.ch/api.php/v1/stationboard?id=".$stationid);
-  if ($return->code == 200) {
-    $response = json_decode($return->data);
-  } else {
-    watchdog("gottago", "Error while quering: http://transport.opendata.ch/api.php/v1/stationboard?id=" . $stationid . "
-      Error Code: ".$return->code . ". Error: ". $return->error);
-    return "no_api";
-  }
-  $lines = array();
-
-  /**
-   * There is no really possibility to get all lines for a station.
-   * So we just go through all departs and get the possible lines from it.
-   */
-  foreach ($response->stationboard as $key => $departure) {
-    $line_identifier = $departure->name . "|" . $departure->to;
-    if (!in_array($line_identifier, $lines)) {
-      $lines[$line_identifier] = $departure->name . " " . t('direction:') . " " . $departure->to;
-    }
-  }
-  return $lines;
+function gottago_get_next_refresh($second_next_departure, $gottago_node, $next_departure) {
+  $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
+  $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
+  $next_refresh_timeframe = variable_get('gottago_refresh_timeframe', 60);
+  return $second_next_departure->remaining_seconds - $delay - $go_timeframe - $next_refresh_timeframe;
 }
 
 /**
