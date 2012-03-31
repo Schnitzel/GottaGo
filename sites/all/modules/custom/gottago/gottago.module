@@ -279,6 +279,46 @@ function gottago_ajax_callback_field_station_select($form, &$form_state) {
 }
 
 /**
+ * Queries the TransportAPI for the given StationID and returns all Lines which
+ * are running in the near future
+ *
+ * @param $stationid
+ *    The stationid how TransportAPI would need it
+ *
+ * @return $lines
+ *    An array of all liney in the near future.
+ *    Key: linename|destination (lineidentifier)
+ */
+function gottago_get_lines_for_station($stationid = FALSE){
+
+  if (!isset($stationid) || !is_numeric($stationid)){
+    return FALSE;
+  }
+
+  $return = drupal_http_request("http://transport.opendata.ch/api.php/v1/stationboard?id=".$stationid);
+  if ($return->code == 200) {
+    $response = json_decode($return->data);
+  } else {
+    watchdog("gottago", "Error while quering: http://transport.opendata.ch/api.php/v1/stationboard?id=" . $stationid . "
+      Error Code: ".$return->code . ". Error: ". $return->error);
+    return "no_api";
+  }
+  $lines = array();
+
+  /**
+   * There is no really possibility to get all lines for a station.
+   * So we just go through all departs and get the possible lines from it.
+   */
+  foreach ($response->stationboard as $key => $departure) {
+    $line_identifier = $departure->name . "|" . $departure->to;
+    if (!in_array($line_identifier, $lines)) {
+      $lines[$line_identifier] = $departure->name . " " . t('direction:') . " " . $departure->to;
+    }
+  }
+  return $lines;
+}
+
+/**
  * @todo: document it.
  */
 function gottago_get_next_refresh($second_next_departure, $gottago_node, $next_departure) {
