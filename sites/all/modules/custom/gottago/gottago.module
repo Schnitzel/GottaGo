@@ -107,14 +107,14 @@ function gottago_api_go_status($gottago_node) {
     $next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
                                                        $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
                                                        $query_result);
+    $second_next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
+                                                       $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
+                                                       $query_result, 1);
     dpm($next_departure);
     $response['status'] = gottago_get_departure_status($next_departure, $gottago_node);
     // If the status is not go, it can happen that the status is go for the
     // second next departure, so check also that.
     if ($response['status'] !='go') {
-      $second_next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
-                                                       $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
-                                                       $query_result, 1);
       dpm($second_next_departure);
       $second_next_status = gottago_get_departure_status($second_next_departure, $gottago_node);
       if ($second_next_status == 'go') {
@@ -123,9 +123,8 @@ function gottago_api_go_status($gottago_node) {
     }
     
     // Status changes.
-    $response['status_changes']['off'] = '210';
-    $response['status_changes']['go'] = '120';
-    $response['status_changes']['no_go'] = '180';
+    $response['status_changes'] = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    
     // Next refresh
     $response['next_refresh'] = '23345';
   }
@@ -165,23 +164,42 @@ function gottago_get_departure_status($departure, $gottago_node) {
   // - go_timeframe = the number of seconds for the Go timeframe.
   // - no_go_timeframe = the numebr of seconds for the No Go timeframe.
   // - remaining_time = the remaining time
-  // then the status is go if: delay <= remaining_time <= delay + go_timeframe,
-  // that means: 0 <= remaining_time - delay <= go_timeframe.
-  if (0 <= $departure->remaining_seconds - $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] &&
-      $departure->remaining_seconds - $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] <= variable_get('gottago_go_status_timeframe', 60)) {
-      return 'go';
+  // then the status is go if: delay < remaining_time <= delay + go_timeframe,
+  // that means: 0 < remaining_time - delay <= go_timeframe.
+  $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
+  $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
+  $no_go_timeframe = variable_get('gottago_no_go_status_timeframe', 30);
+  if (0 < $departure->remaining_seconds - $delay && $departure->remaining_seconds - $delay <= $go_timeframe) {
+    return 'go';
   }
-  // @todo: if the status is no_go or off, check also the second one.
-  // @todo: make a custom function for this!
-  // The status is no_go if: remaining_time < delay AND delay - remaining_time < no_go_timefreame.
-  elseif ($departure->remaining_seconds < $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] &&
-        $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] - $departure->remaining_seconds < variable_get('gottago_no_go_status_timeframe', 30)) {
-        return 'no_go';
+  // The status is no_go if: remaining_time <= delay AND delay - remaining_time < no_go_timefreame.
+  elseif ($departure->remaining_seconds <= $delay && $delay - $departure->remaining_seconds < $no_go_timeframe) {
+    return 'no_go';
   }
   // In all other cases, the response is off.
   else {
     return 'off';
   }
+}
+
+/**
+ * @todo: document it.
+ * @param type $next_departure
+ * @param type $second_next_departure
+ * @param type $gottago_node 
+ */
+function gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node) {
+  // @todo: document why this is like that!
+  $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
+  $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
+  $no_go_timeframe = variable_get('gottago_no_go_status_timeframe', 30);
+  $statuses['go'] = ($next_departure->remaining_seconds - $delay - $go_timeframe > 0)?$next_departure->remaining_seconds - $delay - $go_timeframe:
+                                                                                      $second_next_departure->remaining_seconds - $delay - $go_timeframe;
+  $statuses['no_go'] = ($next_departure->remaining_seconds - $delay > 0)?$next_departure->remaining_seconds - $delay:
+                                                                         $second_next_departure->remaining_seconds - $delay;
+  $statuses['off'] = ($next_departure->remaining_seconds - $delay + $no_go_timeframe > 0)?$next_departure->remaining_seconds - $delay + $no_go_timeframe:
+                                                                                      $second_next_departure->remaining_seconds - $delay + $no_go_timeframe;
+  return $statuses;
 }
 
 function gottago_test(){

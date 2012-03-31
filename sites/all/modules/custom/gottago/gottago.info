@@ -1,3 +1,5 @@
 name = GottaGo
 description = Manages the GottaGo Features
 core = 7.x
+
+files[] = gottago.test
