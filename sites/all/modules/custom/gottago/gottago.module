@@ -415,7 +415,9 @@ function gottago_get_departure($stationid, $line_identifier, $api_response = NUL
     }
     // @todo: Maybe make some additional checks regarding the timezone if
     // needed...
-    $departure_time = strtotime($departure_time);
+    $departure_time_array = explode("T", $departure_time);
+    $departure_time_single = explode(":", $departure_time_array[1]);
+    $departure_time = strtotime($departure_time_single[0].":".$departure_time_single[1]);
     $current_time = time();
     $remaining_seconds = $departure_time - ($current_time);
     $departure_object->remaining_seconds = $remaining_seconds;
