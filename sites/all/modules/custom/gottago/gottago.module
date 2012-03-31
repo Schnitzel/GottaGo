@@ -125,7 +125,7 @@ function gottago_api_go_status($gottago_node) {
 
     // Status changes.
     $response['status_changes'] = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
-    
+
     // Next refresh
     $response['next_refresh'] = '23345';
   }
@@ -187,7 +187,7 @@ function gottago_get_departure_status($departure, $gottago_node) {
  * @todo: document it.
  * @param type $next_departure
  * @param type $second_next_departure
- * @param type $gottago_node 
+ * @param type $gottago_node
  */
 function gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node) {
   // @todo: document why this is like that!
