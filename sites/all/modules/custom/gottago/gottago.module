@@ -417,14 +417,6 @@ function gottago_get_departure($stationid, $line_identifier, $api_response = NUL
     // needed...
     $departure_time = strtotime($departure_time);
     $current_time = time();
-    // If the departure time is smaller then the current time, the departure
-    // time is probably in the future so we add a day. But, add also a delta,
-    // because the request can be performed in the same minute as the
-    // departure time, and this will result in adding a day when it is not
-    // necessary.
-    if ($departure_time + 120 < $current_time) {
-      $departure_time = $departure_time + (24 * 60 * 60);
-    }
     $remaining_seconds = $departure_time - $current_time;
     $departure_object->remaining_seconds = $remaining_seconds;
     return $departure_object;
