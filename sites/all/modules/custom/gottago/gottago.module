@@ -132,12 +132,6 @@ function gottago_api_go_status($gottago_node) {
     else {
       $response = array('error' => 'no_data');
     }
-
-    // Status changes.
-    $response['status_changes'] = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
-
-    // Next refresh
-    $response['next_refresh'] = '23345';
   }
   else {
     $response = array('error' => 'no_api');
