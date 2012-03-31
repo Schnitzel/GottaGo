@@ -45,10 +45,10 @@ function gottago_menu(){
 
 /**
  * Magic placeholder for %gottago
- * 
+ *
  * @param string $id
  *  The id of the gottago node, that is the title of the node.
- * 
+ *
  * @return object
  *  The gottago node object, or FALSE if the node id was not found.
  */
@@ -71,7 +71,7 @@ function gottago_load($id) {
 
 /**
  * Entry point for the gottago API.
- * 
+ *
  * @param string $type
  *  The type of the operation to call. Valid values so far:
  *   - go_status: used to return "yes" or "no", if the user will catch the next
@@ -85,20 +85,21 @@ function gottago_api($type, $gottago_node) {
     $return = call_user_func_array('gottago_api_' . $type, array($gottago_node));
     dpm($return);
   }
-  //drupal_json_output($return);
-  //exit();
+  drupal_json_output($return);
+  exit();
   return array('#markup' => 'test');
 }
 
 /**
  * Api function to get the status of the next way of transport.
- * 
+ *
  * @return @todo document the return.
  */
 function gottago_api_go_status($gottago_node) {
   // Prepare the data to query the API.
   $params['id'] = $gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'];
   $query_result = gottago_api_query($params);
+  dpm($query_result);
   $response = array();
 
   // Time to construct the json output out of the response.
@@ -121,7 +122,7 @@ function gottago_api_go_status($gottago_node) {
         $response['status'] = 'go';
       }
     }
-    
+
     // Status changes.
     $response['status_changes']['off'] = '210';
     $response['status_changes']['go'] = '120';
@@ -135,7 +136,7 @@ function gottago_api_go_status($gottago_node) {
 
 /**
  * Queries the Transport API and returns the data.
- * 
+ *
  * @param array $params
  *  An array of params that will be used in the query string.
  */
