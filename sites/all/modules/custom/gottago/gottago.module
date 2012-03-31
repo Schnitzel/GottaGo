@@ -19,11 +19,17 @@ function gottago_permission() {
  * Implementation of hook_menu().
  */
 function gottago_menu(){
+  $items['gottago_status'] = array(
+    'title' => 'GottaGo Status',
+    'access callback' => TRUE,
+    'page callback' => 'gottago_status',
+    'type' => MENU_CALLBACK,
+  );
   $items['gottago_status/%gottago'] = array(
     'title' => 'GottaGo Status',
     'access callback' => TRUE,
-    'page callback' => 'gottago_api',
-    'page arguments' => array('go_status', 1),
+    'page callback' => 'gottago_status',
+    'page arguments' => array(1),
     'type' => MENU_CALLBACK,
   );
   $items['admin/config/system/gottago_api'] = array(
@@ -64,6 +70,35 @@ function gottago_load($id) {
 }
 
 /**
+ * Returns the status of a gottago node.
+ * 
+ * If the node is not specified, it tries to load the ids from $_GET.
+ */
+function gottago_status($gottago_node = NULL) {
+  // If we have the gottago node, print the result only for it.
+  $result = array();
+  if (!is_null($gottago_node)) {
+    $result = gottago_api('go_status', $gottago_node);
+  }
+  else {
+    // Try to load the ids from $_GET.
+    // @todo: improve this... now it makes a request for every id...
+    if (isset($_GET['ids']) && count($_GET['ids'])) {
+      foreach ($_GET['ids'] as $id) {
+        $gottago_node = gottago_load($id);
+        if ($gottago_node && !isset($result[$id])) {
+          $result[$id] = gottago_api('go_status', $gottago_node);
+        }
+      }
+    }
+  }
+  //drupal_json_output($result);
+  //exit();
+  dpm($result);
+  return array('#markup' => 'test');
+}
+
+/**
  * Entry point for the gottago API.
  *
  * @param string $type
@@ -89,8 +124,7 @@ function gottago_api($type, $gottago_node) {
     $return['error'] = 'no_api';
     watchdog("gottago", "Calling the GottaGo API with a non-existing type: @type" , array('@type' => $type), WATCHDOG_ERROR);
   }
-  drupal_json_output($return);
-  exit();
+  return $return;
 }
 
 /**
