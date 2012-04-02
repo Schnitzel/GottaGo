@@ -12,7 +12,7 @@ function Scheduler(){
      * Aborts all running timeouts
      */
     this.clearAll = function(){
-        jQuery.each(timeouts, function(index, timeout){
+        $.each(timeouts, function(index, timeout){
             // Abort timeout
             clearTimeout(timeout);
         });
@@ -51,7 +51,16 @@ function GottaGo(status_indicator, query_service){
         off: function handle_off(json){
             if(!isNaN(json.status_changes.go)) {
                 var minutesUntilGo = Math.round(json.status_changes.go/60);
-                status_indicator.text("").show();
+                status_indicator.text(" Noch "+minutesUntilGo+" Minuten.").show();
+                
+                // Always show correct relative time
+                if(minutesUntilGo>1){
+                    var updatedStatusChanges = $.extend({}, json.status_changes, {go:json.status_changes.go-60});
+                    var updatedJson = $.extend({}, json, {status_changes: updatedStatusChanges});
+                    timeouts.schedule(function(){
+                        status_handlers.off(updatedJson);
+                    }, 60*1000);
+                }
             }
         }
     };
@@ -82,7 +91,7 @@ function GottaGo(status_indicator, query_service){
             status_indicator.reset().addClass(json.status);
             status_handlers[json.status](json);
 
-            jQuery.each(status_handlers, function(status, handler){
+            $.each(status_handlers, function(status, handler){
                 var delay = json.status_changes[status];
                 if(!isNaN(delay)){
                     // Schedule status changes for future states
