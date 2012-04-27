@@ -22,3 +22,15 @@
 [submodule "sites/all/modules/devel_themer"]
 	path = sites/all/modules/devel_themer
 	url = git://git.drupal.org/project/devel_themer.git
+[submodule "sites/all/modules/r4032login"]
+	path = sites/all/modules/r4032login
+	url = git://git.drupal.org/project/r4032login.git
+[submodule "sites/all/modules/logintoboggan"]
+	path = sites/all/modules/logintoboggan
+	url = git://git.drupal.org/project/logintoboggan.git
+[submodule "sites/all/themes/omega"]
+	path = sites/all/themes/omega
+	url = git://git.drupal.org/project/omega.git
+[submodule "sites/all/modules/omega_tools"]
+	path = sites/all/modules/omega_tools
+	url = git://git.drupal.org/project/omega_tools.git
