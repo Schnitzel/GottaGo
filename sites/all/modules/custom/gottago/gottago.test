@@ -11,11 +11,11 @@ class GottaGoStatusUnitTest extends DrupalUnitTestCase {
       'group' => 'GottaGo Unit Tests'
     );
   }
-  
+
   function setUp() {
     parent::setUp();
   }
-  
+
   /**
    * Tests the gottago_get_next_statuses() function.
    */
@@ -26,100 +26,100 @@ class GottaGoStatusUnitTest extends DrupalUnitTestCase {
     $next_departure = new stdClass();
     $second_next_departure = new stdClass();
     $second_next_departure->remaining_seconds = 900;
-    $gottago_node = new stdClass();
-    $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] = 100;
-    
+    $gottago_query_array = array();
+    $gottago_query_array['delay'] = 100;
+
     // ----x---gggggdndndndddddddD---------
     $next_departure->remaining_seconds = 300;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 140, 'no_go' => 200, 'off' => 230);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------xgggggdndndndddddddD----------gggggdndndndddddD
     $next_departure->remaining_seconds = 161;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 1, 'no_go' => 61, 'off' => 91);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // --------gggggdndndndddddddD----------gggggdndndndddddD
     //         x
     $next_departure->remaining_seconds = 160;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 60, 'off' => 90);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
-    //          x 
+    //          x
     $next_departure->remaining_seconds = 130;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 30, 'off' => 60);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //            x
     $next_departure->remaining_seconds = 101;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 1, 'off' => 31);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //             x
     $next_departure->remaining_seconds = 100;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 800, 'off' => 30);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //               x
     $next_departure->remaining_seconds = 75;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 800, 'off' => 5);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                  x
     $next_departure->remaining_seconds = 71;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 800, 'off' => 1);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                   x
     $next_departure->remaining_seconds = 70;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 800, 'off' => 830);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                     x
     $next_departure->remaining_seconds = 40;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 800, 'off' => 830);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                         d
     $next_departure->remaining_seconds = 1;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 800, 'off' => 830);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                          x
     $next_departure->remaining_seconds = 0;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 740, 'no_go' => 800, 'off' => 830);
     $this->assertIdentical($statuses, $correct_statuses);
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                            x
     $next_departure->remaining_seconds = -10;
     $second_next_departure->remaining_seconds = 500;
-    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
+    $statuses = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
     $correct_statuses = array('go' => 340, 'no_go' => 400, 'off' => 430);
     $this->assertIdentical($statuses, $correct_statuses);
   }
-  
+
   /**
    * Tests the gottago_get_departure_status() function.
    */
@@ -128,83 +128,83 @@ class GottaGoStatusUnitTest extends DrupalUnitTestCase {
     $conf['gottago_go_status_timeframe'] = 60;
     $conf['gottago_no_go_status_timeframe'] = 30;
     $next_departure = new stdClass();
-    $gottago_node = new stdClass();
-    $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] = 100;
-    
+    $gottago_query_array = array();
+    $gottago_query_array['delay'] = 100;
+
     // ----x---gggggdndndndddddddD---------
     $next_departure->remaining_seconds = 300;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'off');
-    
+
     // -------xgggggdndndndddddddD----------gggggdndndndddddD
     $next_departure->remaining_seconds = 161;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'off');
-    
+
     // --------gggggdndndndddddddD----------gggggdndndndddddD
     //         x
     $next_departure->remaining_seconds = 160;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'go');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
-    //          x 
+    //          x
     $next_departure->remaining_seconds = 130;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'go');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //            x
     $next_departure->remaining_seconds = 101;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'go');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //             x
     $next_departure->remaining_seconds = 100;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'no_go');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //               x
     $next_departure->remaining_seconds = 75;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'no_go');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                  x
     $next_departure->remaining_seconds = 71;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'no_go');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                   x
     $next_departure->remaining_seconds = 70;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'off');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                     x
     $next_departure->remaining_seconds = 40;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'off');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                         d
     $next_departure->remaining_seconds = 1;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'off');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                          x
     $next_departure->remaining_seconds = 0;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'off');
-    
+
     // -------gggggdndndndddddddD----------gggggdndndndddddD
     //                            x
     $next_departure->remaining_seconds = -10;
-    $status = gottago_get_departure_status($next_departure, $gottago_node);
+    $status = gottago_get_departure_status($next_departure, $gottago_query_array);
     $this->assertEqual($status, 'off');
   }
 }

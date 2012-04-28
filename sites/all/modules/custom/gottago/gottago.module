@@ -32,6 +32,13 @@ function gottago_menu(){
     'page arguments' => array(1, 2),
     'type' => MENU_CALLBACK,
   );
+  $items['gottago_status_direct/%/%/%'] = array(
+    'title' => 'GottaGo Status',
+    'access callback' => TRUE,
+    'page callback' => 'gottago_status_direct',
+    'page arguments' => array(1, 2, 3),
+    'type' => MENU_CALLBACK,
+  );
   $items['admin/config/system/gottago_api'] = array(
     'title' => 'GottaGo API',
     'description' => 'Configure the GottaGO API settings',
@@ -83,7 +90,7 @@ function gottago_status($gottago_node = NULL, $response = "json") {
   // If we have the gottago node, print the result only for it.
   $result = array();
   if (!is_null($gottago_node)) {
-    $result = gottago_api('go_status', $gottago_node);
+    $result = gottago_api('go_status', NULL, $gottago_node);
   }
   else {
     // Try to load the ids from $_GET.
@@ -92,7 +99,7 @@ function gottago_status($gottago_node = NULL, $response = "json") {
       foreach ($_GET['ids'] as $id) {
         $gottago_node = gottago_load($id);
         if ($gottago_node && !isset($result[$id])) {
-          $result[$id] = gottago_api('go_status', $gottago_node);
+          $result[$id] = gottago_api('go_status', NULL, $gottago_node);
         }
       }
     }
@@ -108,6 +115,26 @@ function gottago_status($gottago_node = NULL, $response = "json") {
       print gottago_convert_csv($result);
       exit;
   }
+}
+
+/**
+ * Returns the status of a gottago node.
+ *
+ * If the node is not specified, it tries to load the ids from $_GET.
+ */
+function gottago_status_direct($station, $line, $delay) {
+  // If we have the gottago node, print the result only for it.
+
+  $gottago_query_array = array(
+    'station' => $station,
+    'line' => $line,
+    'delay' => $delay
+  );
+  $result = gottago_api('go_status', $gottago_query_array);
+
+  drupal_json_output($result);
+  exit;
+
 }
 
 function gottago_convert_csv($result){
@@ -127,25 +154,40 @@ function gottago_convert_csv($result){
  *   - go_status: used to return "yes" or "no", if the user will catch the next
  *     transport.
  */
-function gottago_api($type, $gottago_node) {
+function gottago_api($type, $gottago_query_array = NULL, $gottago_node = NULL) {
   // @todo: it would be nice to use exceptions here...
   $return = array();
-  if (!is_object($gottago_node)) {
-    $return['error'] = 'not_configured';
-    ob_start();
-    echo '<pre>';
-    print_r($gottago_node);
-    $output = ob_get_clean();
-    watchdog("gottago", "Calling the GottaGo API (" . $type .  ") with a wrong gottago_node object: " . $output, NULL, WATCHDOG_ERROR);
+
+  if (!function_exists('gottago_api_' . $type)) {
+    $return['error'] = 'no_api';
+    return $return;
+    watchdog("gottago", "Calling the GottaGo API with a non-existing type: @type" , array('@type' => $type), WATCHDOG_ERROR);
   }
-  elseif (function_exists('gottago_api_' . $type)) {
-    $return = call_user_func_array('gottago_api_' . $type, array($gottago_node));
+  elseif (!is_null($gottago_node)) {
+    if (is_object($gottago_node)) {
+      $gottago_query_array = array(
+        'station' => $gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
+        'line' => $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
+        'delay' => $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'],
+        'description' => $gottago_node->field_description[LANGUAGE_NONE][0]['value']
+      );
+      $return = call_user_func_array('gottago_api_' . $type, array($gottago_query_array));
+      return $return;
+    }
+    else {
+      $return['error'] = 'not_configured';
+      watchdog("gottago", "Calling the GottaGo API (" . $type .  ") with a wrong gottago_node object: " . print_r($gottago_node), NULL, WATCHDOG_ERROR);
+    }
+  }
+  elseif (!is_null($gottago_query_array)) {
+    $return = call_user_func_array('gottago_api_' . $type, array($gottago_query_array));
+    return $return;
   }
   else {
     $return['error'] = 'no_api';
-    watchdog("gottago", "Calling the GottaGo API with a non-existing type: @type" , array('@type' => $type), WATCHDOG_ERROR);
+    return $return;
+    watchdog("gottago", "Calling the GottaGo API without a query" , WATCHDOG_ERROR);
   }
-  return $return;
 }
 
 /**
@@ -153,35 +195,40 @@ function gottago_api($type, $gottago_node) {
  *
  * @return @todo document the return.
  */
-function gottago_api_go_status($gottago_node) {
+function gottago_api_go_status($gottago_query_array) {
   // Prepare the data to query the API.
-  $params['id'] = $gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'];
+  $params['id'] = $gottago_query_array['station'];
   $query_result = gottago_api_query($params);
   $response = array();
 
   // Time to construct the json output out of the response.
   if ($query_result) {
-    $next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
-                                                       $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
+    // Some information about this GottaGo.
+    $response['station'] = $gottago_query_array['station'];
+    $response['line'] = $gottago_query_array['line'];
+    $response['description'] = $gottago_query_array['description'] ? $gottago_query_array['description'] : '';
+
+    $next_departure = gottago_get_departure($gottago_query_array['station'],
+                                                       $gottago_query_array['line'],
                                                        $query_result);
     // If there is no next departure, stop here, and just return the error.
     if (is_object($next_departure)) {
-      $second_next_departure = gottago_get_departure($gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
-                                                         $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
+      $second_next_departure = gottago_get_departure($gottago_query_array['station'],
+                                                         $gottago_query_array['line'],
                                                          $query_result, 1);
       // To go or not to go?
-      $response['status'] = gottago_get_departure_status($next_departure, $gottago_node);
+      $response['status'] = gottago_get_departure_status($next_departure, $gottago_query_array);
       // If the status is not go, it can happen that the status is go for the
       // second next departure, so check also that.
       if ($response['status'] !='go') {
-        $second_next_status = gottago_get_departure_status($second_next_departure, $gottago_node);
+        $second_next_status = gottago_get_departure_status($second_next_departure, $gottago_query_array);
         if ($second_next_status == 'go') {
           $response['status'] = 'go';
         }
       }
       // Status changes and the next refresh.
-      $response['status_changes'] = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node);
-      $response['next_refresh'] = gottago_get_next_refresh($second_next_departure, $gottago_node, $next_departure);
+      $response['status_changes'] = gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array);
+      $response['next_refresh'] = gottago_get_next_refresh($second_next_departure, $gottago_query_array, $next_departure);
     }
     else {
       $response = array('error' => 'no_data');
@@ -217,7 +264,7 @@ function gottago_api_query($params = array()) {
 /**
  * @todo: document it.
  */
-function gottago_get_departure_status($departure, $gottago_node) {
+function gottago_get_departure_status($departure, $gottago_query_array) {
   // The status is to go if the remaining time is between the number of
   // seconds that the user spends walking and the number of seconds that the
   // user spends walking + the On timeframe. So, if
@@ -227,7 +274,7 @@ function gottago_get_departure_status($departure, $gottago_node) {
   // - remaining_time = the remaining time
   // then the status is go if: delay < remaining_time <= delay + go_timeframe,
   // that means: 0 < remaining_time - delay <= go_timeframe.
-  $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
+  $delay = $gottago_query_array['delay'];
   $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
   $no_go_timeframe = variable_get('gottago_no_go_status_timeframe', 30);
   if (0 < $departure->remaining_seconds - $delay && $departure->remaining_seconds - $delay <= $go_timeframe) {
@@ -249,9 +296,9 @@ function gottago_get_departure_status($departure, $gottago_node) {
  * @param type $second_next_departure
  * @param type $gottago_node
  */
-function gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_node) {
+function gottago_get_next_statuses($next_departure, $second_next_departure, $gottago_query_array) {
   // @todo: document why this is like that!
-  $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
+  $delay = $gottago_query_array['delay'];
   $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
   $no_go_timeframe = variable_get('gottago_no_go_status_timeframe', 30);
   // If the next departure is FALSE or no_data, all the statuses are NULL.
@@ -320,7 +367,7 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
 }
 
 function gottago_autocomplete($string) {
-  // @todo: unify the API request with the gottago_api_query() function. 
+  // @todo: unify the API request with the gottago_api_query() function.
   $result = drupal_http_request('http://transport.opendata.ch/api.php/v1/locations?query=' . $string . '&type=station');
   $matches = array();
   if ($result->code == 200) {
@@ -359,7 +406,7 @@ function gottago_get_lines_for_station($stationid = FALSE){
   }
   // If the station id is a string, make a call to the transport api and get
   // the station id.
-  // @todo: unify the API request with the gottago_api_query() function. 
+  // @todo: unify the API request with the gottago_api_query() function.
   if (!is_numeric($stationid)) {
     $result = drupal_http_request('http://transport.opendata.ch/api.php/v1/locations?query=' . $stationid . '&type=station');
     $matches = array();
@@ -390,11 +437,11 @@ function gottago_get_lines_for_station($stationid = FALSE){
 /**
  * @todo: document it.
  */
-function gottago_get_next_refresh($second_next_departure, $gottago_node, $next_departure) {
+function gottago_get_next_refresh($second_next_departure, $gottago_query_array, $next_departure) {
   if (!is_object($second_next_departure)) {
     return 0;
   }
-  $delay = $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'];
+  $delay = $gottago_query_array['delay'];
   $go_timeframe = variable_get('gottago_go_status_timeframe', 60);
   $next_refresh_timeframe = variable_get('gottago_refresh_timeframe', 60);
   if ($next_departure->seconds_remaining - $delay - $go_timeframe - $next_refresh_timeframe > 0) {
@@ -449,10 +496,10 @@ function gottago_get_departure($stationid, $line_identifier, $api_response = NUL
     }
     // @todo: Maybe make some additional checks regarding the timezone if
     // needed...
-    $departure_time_array = explode("T", $departure_time);
-    $departure_time_single = explode(":", $departure_time_array[1]);
-    $departure_time = strtotime($departure_time_single[0].":".$departure_time_single[1]);
+
     $current_time = time();
+    $departure_time = strtotime($departure_time);
+
     $remaining_seconds = $departure_time - ($current_time);
     $departure_object->remaining_seconds = $remaining_seconds;
     return $departure_object;
