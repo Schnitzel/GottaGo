@@ -12,7 +12,7 @@ function Scheduler(){
      * Aborts all running timeouts
      */
     this.clearAll = function(){
-        $.each(timeouts, function(index, timeout){
+        jQuery.each(timeouts, function(index, timeout){
             // Abort timeout
             clearTimeout(timeout);
         });
@@ -32,9 +32,18 @@ function Scheduler(){
 /**
  * Handler for web service's JSON protocol. Shows status messages and errors.
  * @param {jQuery} status_indicator Wrapped element to show status
- * @param {Function} query_service Callback to query web service again
+ * @param {object}
  */
-function GottaGo(status_indicator, query_service){
+function GottaGo(status_indicator, query_object){
+    if ("id" in query_object) {
+        var using_gootago_key = true;
+        var id = query_object['id'];
+    } else {
+        var using_gootago_key = false;
+        var station = query_object['station'];
+        var line = query_object['line'];
+        var delay = query_object['delay'];
+    }
     var timeouts = new Scheduler();
     var error_messages = {
         no_api: "Statusinformationen sind derzeit nicht verfügbar. Bitte zu einem späteren Zeitpunkt erneut versuchen.",
@@ -52,11 +61,11 @@ function GottaGo(status_indicator, query_service){
             if(!isNaN(json.status_changes.go)) {
                 var minutesUntilGo = Math.round(json.status_changes.go/60);
                 status_indicator.text(" Noch "+minutesUntilGo+" Minuten.").show();
-                
+
                 // Always show correct relative time
                 if(minutesUntilGo>1){
-                    var updatedStatusChanges = $.extend({}, json.status_changes, {go:json.status_changes.go-60});
-                    var updatedJson = $.extend({}, json, {status_changes: updatedStatusChanges});
+                    var updatedStatusChanges = jQuery.extend({}, json.status_changes, {go:json.status_changes.go-60});
+                    var updatedJson = jQuery.extend({}, json, {status_changes: updatedStatusChanges});
                     timeouts.schedule(function(){
                         status_handlers.off(updatedJson);
                     }, 60*1000);
@@ -70,13 +79,34 @@ function GottaGo(status_indicator, query_service){
      * @return jQuery Wrapped status indicator element
      */
     status_indicator.reset = function(){
-        return this.text('').removeClass().hide();
+        return this.text('').removeClass('error off go no_go').hide();
     };
+
+    if (using_gootago_key) {
+        var url = '/gottago/gottago_status/' + id;
+    } else {
+        var url = '/gottago/gottago_status_direct/' + station + '/' + line + '/' + delay;
+    }
+
+    status_indicator.query = function (){
+        jQuery.ajax({
+          url: url,
+          dataType: 'json',
+          success: function(data) {
+            status_indicator.parseResponse(data)
+          },
+          error: function() {
+            status_indicator.handleRequestError();
+          }
+        });
+    };
+
+
 
     /**
      * Interprets the web service's response and displays status.
      */
-    this.parseResponse = function parse(json){
+    status_indicator.parseResponse = function parse(json){
         status_indicator.reset();
         timeouts.clearAll();
         if(json.constructor!==({}).constructor){
@@ -91,7 +121,7 @@ function GottaGo(status_indicator, query_service){
             status_indicator.reset().addClass(json.status);
             status_handlers[json.status](json);
 
-            $.each(status_handlers, function(status, handler){
+            jQuery.each(status_handlers, function(status, handler){
                 var delay = json.status_changes[status];
                 if(!isNaN(delay)){
                     // Schedule status changes for future states
@@ -104,15 +134,16 @@ function GottaGo(status_indicator, query_service){
         }
 
         // Schedule another request to the server
-        timeouts.schedule(query_service, (json.next_refresh||60)*1000);
+        timeouts.schedule(status_indicator.query, (json.next_refresh||60)*1000);
     };
 
-    this.handleRequestError = function(){
+    status_indicator.handleRequestError = function(){
         status_indicator.reset();
         status_indicator.addClass('error').text("Server nicht erreichbar.").show();
 
         timeouts.clearAll();
         // Try again in 1min and hope service is up again
-        timeouts.schedule(query_service, 60*1000);
+        timeouts.schedule(status_indicator.query, 60*1000);
     };
+    status_indicator.query();
 }

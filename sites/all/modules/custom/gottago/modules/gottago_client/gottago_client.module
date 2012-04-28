@@ -23,12 +23,12 @@ function gottago_client_page_delivery_callback_alter(&$delivery_callback) {
   if (arg(0) == 'gottago_client') {
     $delivery_callback = 'gottago_client_delivery_page';
   }
+  drupal_add_js(drupal_get_path('module', 'gottago_client') . '/statusquery.js');
+  drupal_add_js(drupal_get_path('module', 'gottago_client') . '/gottago_client.js');
 }
 
 function gottago_client_page($id) {
   drupal_add_js(array('gottago' => array('id' => $id)), 'setting');
-  drupal_add_js(drupal_get_path('module', 'gottago_client') . '/statusquery.js');
-  drupal_add_js(drupal_get_path('module', 'gottago_client') . '/gottago_client.js');
 }
 
 function gottago_client_delivery_page($page_callback_result) {
@@ -64,7 +64,7 @@ function gottago_client_delivery_page($page_callback_result) {
             </html>';
   print $output;
   /*echo '<pre>';
-  
+
   print_r($js);
   $html = theme('html');
   print_r($page_callback_result); die();*/
