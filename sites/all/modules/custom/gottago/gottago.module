@@ -40,6 +40,11 @@ function gottago_menu(){
     'page arguments' => array('gottago_admin'),
     'file' => 'gottago.admin.inc',
   );
+  $items['gottago/autocomplete'] = array(
+    'access callback' => TRUE,
+    'page callback' => 'gottago_autocomplete',
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -297,6 +302,7 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
     'wrapper' => 'gottago-line',
     'event' => 'change',
   );
+  $form['field_station']['und'][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
 
   $form['field_station']['#suffix'] = '<div id="gottago-line" class="gottago-line"></div>';
   if (isset($form_state['values']['field_station']['und'][0]['value'])) {
@@ -311,6 +317,21 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   } else {
     $form['field_line']['#access'] = FALSE;
   }
+}
+
+function gottago_autocomplete($string) {
+  // @todo: unify the API request with the gottago_api_query() function. 
+  $result = drupal_http_request('http://transport.opendata.ch/api.php/v1/locations?query=' . $string . '&type=station');
+  $matches = array();
+  if ($result->code == 200) {
+    $data = json_decode(($result->data));
+    if ($data->stations && count(($data->stations))) {
+      foreach ($data->stations as $station) {
+        $matches[$station->name] = check_plain($station->name);
+      }
+    }
+  }
+  drupal_json_output($matches);
 }
 
 /**
@@ -333,9 +354,22 @@ function gottago_ajax_callback_field_station_select($form, &$form_state) {
  *    Key: linename|destination (lineidentifier)
  */
 function gottago_get_lines_for_station($stationid = FALSE){
-
-  if (!isset($stationid) || !is_numeric($stationid)){
+  if (!isset($stationid)){
     return FALSE;
+  }
+  // If the station id is a string, make a call to the transport api and get
+  // the station id.
+  // @todo: unify the API request with the gottago_api_query() function. 
+  if (!is_numeric($stationid)) {
+    $result = drupal_http_request('http://transport.opendata.ch/api.php/v1/locations?query=' . $stationid . '&type=station');
+    $matches = array();
+    if ($result->code == 200) {
+      $data = json_decode(($result->data));
+      if ($data->stations && count(($data->stations))) {
+        $station = current($data->stations);
+        $stationid = $station->id;
+      }
+    }
   }
   $response = gottago_api_query(array('id' => $stationid));
   $lines = array();
