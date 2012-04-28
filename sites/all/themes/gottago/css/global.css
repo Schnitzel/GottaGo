@@ -1,2 +1,24 @@
 /* This file will hold styles for the mobile version of your website (mobile first). */
 /* This also can include ANY global CSS that applies site-wide. Unless overwritten by a more specific style rule, CSS declarations in global.css will apply site-wide. */
+#status_indicator {
+    display:none;
+    font-size: 5em;
+    background: #eee;
+    border: 1px solid #666;
+    padding:0.25em;
+    margin: 1em;
+}
+#status_indicator.error,
+.status_indicator.error {
+     background: red;
+}
+#status_indicator.off,
+.status_indicator.off {}
+#status_indicator.go,
+.status_indicator.go {
+    background:lightgreen;
+}
+#status_indicator.no_go,
+.status_indicator.no_go {
+    background:lightcoral;
+}
