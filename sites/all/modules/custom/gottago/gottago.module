@@ -300,7 +300,7 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   $form['field_station']['und'][0]['value']['#ajax'] = array(
     'callback' => 'gottago_ajax_callback_field_station_select',
     'wrapper' => 'gottago-line',
-    'event' => 'change',
+    'event' => 'blur',
   );
   $form['field_station']['und'][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
 
