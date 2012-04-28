@@ -252,6 +252,7 @@ function gottago_api_query($params = array()) {
     'query' => $params,
   );
   $url = url(variable_get('gottago_stationboard_url', 'http://transport.opendata.ch/api.php/v1/stationboard'), $url_options);
+  dpm($url);
   // @todo: Catch and handle any http errors.
   $return = drupal_http_request($url);
   if ($return->code == 200) {
@@ -364,6 +365,9 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   } else {
     $form['field_line']['#access'] = FALSE;
   }
+  $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/modules/gottago_client/statusquery.js';
+  $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/gottago.js';
+  $form['#suffix'] .= '<div id="gottago_status_indicator"> </div>';
 }
 
 function gottago_autocomplete($string) {
@@ -425,6 +429,7 @@ function gottago_get_lines_for_station($stationid = FALSE){
    * There is no really possibility to get all lines for a station.
    * So we just go through all departs and get the possible lines from it.
    */
+  dpm($response->stationboard);
   foreach ($response->stationboard as $key => $departure) {
     $line_identifier = $departure->name . "|" . $departure->to;
     if (!in_array($line_identifier, $lines)) {

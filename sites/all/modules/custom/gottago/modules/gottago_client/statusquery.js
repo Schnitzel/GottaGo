@@ -12,7 +12,7 @@ function Scheduler(){
      * Aborts all running timeouts
      */
     this.clearAll = function(){
-        $.each(timeouts, function(index, timeout){
+        jQuery.each(timeouts, function(index, timeout){
             // Abort timeout
             clearTimeout(timeout);
         });
@@ -55,8 +55,8 @@ function GottaGo(status_indicator, query_service){
                 
                 // Always show correct relative time
                 if(minutesUntilGo>1){
-                    var updatedStatusChanges = $.extend({}, json.status_changes, {go:json.status_changes.go-60});
-                    var updatedJson = $.extend({}, json, {status_changes: updatedStatusChanges});
+                    var updatedStatusChanges = jQuery.extend({}, json.status_changes, {go:json.status_changes.go-60});
+                    var updatedJson = jQuery.extend({}, json, {status_changes: updatedStatusChanges});
                     timeouts.schedule(function(){
                         status_handlers.off(updatedJson);
                     }, 60*1000);
@@ -91,7 +91,7 @@ function GottaGo(status_indicator, query_service){
             status_indicator.reset().addClass(json.status);
             status_handlers[json.status](json);
 
-            $.each(status_handlers, function(status, handler){
+            jQuery.each(status_handlers, function(status, handler){
                 var delay = json.status_changes[status];
                 if(!isNaN(delay)){
                     // Schedule status changes for future states
