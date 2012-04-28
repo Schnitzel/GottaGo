@@ -351,13 +351,18 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   $form['field_station']['und'][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
 
   $form['field_station']['#suffix'] = '<div id="gottago-line" class="gottago-line"></div>';
-  if (isset($form_state['values']['field_station']['und'][0]['value'])) {
-    $stationid = $form_state['values']['field_station']['und'][0]['value'];
+  $default_value = NULL;
+  if (isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value']) || isset($form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'])) {
+    $stationid = isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value'])?$form_state['values']['field_station'][LANGUAGE_NONE][0]['value']:$form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'];
     $radio_options = gottago_get_lines_for_station($stationid);
+    if ($form['#node']->field_line[LANGUAGE_NONE][0]['value']) {
+      $default_value = $form['#node']->field_line[LANGUAGE_NONE][0]['value'];
+    }
   }
   if (isset($radio_options)) {
-    $form['field_line']['und']['#options'] = $radio_options;
+    $form['field_line'][LANGUAGE_NONE]['#options'] = $radio_options;
     $form['field_line']['#access'] = TRUE;
+    $form['field_line'][LANGUAGE_NONE]['#default_value'] = $default_value;
     $form['field_line']['#prefix'] = '<div id="gottago-line" class="gottago-line">';
     $form['field_line']['#suffix'] = '</div>';
   } else {

@@ -3,6 +3,7 @@
   
   Drupal.behaviors.initGottago = {
     attach: function(context) {
+      updateDirectGottaGo();
       $('input[name="field_line[und]"]', context).not('.gottago-processed').addClass('gottago-processed').bind('click', function(event) {
         updateDirectGottaGo();
       });
