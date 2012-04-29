@@ -343,13 +343,18 @@ function gottago_get_next_statuses($next_departure, $second_next_departure, $got
  * Implements hook_form_alter().
  */
 function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
+  drupal_set_title(t('Never miss your connection again. Here we go:'));
   $form['field_station']['und'][0]['value']['#ajax'] = array(
     'callback' => 'gottago_ajax_callback_field_station_select',
     'wrapper' => 'gottago-line',
     'event' => 'blur',
   );
   $form['field_station']['und'][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
-
+  $form['field_station']['und'][0]['value']['#attributes'] = array(
+    'placeholder' => t('Name of station')
+  );
+  $form['field_station']['und'][0]['value']['#size'] = 0;
+  $form['field_station']['#prefix'] = '<span class="field-station-prefix">' . t('I want to leave from') . '</span> ';
   $form['field_station']['#suffix'] = '<div id="gottago-line" class="gottago-line"></div>';
   $default_value = NULL;
   if (isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value']) || isset($form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'])) {
@@ -368,6 +373,10 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   } else {
     $form['field_line']['#access'] = FALSE;
   }
+
+  $form['field_delay']['#prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
+  $form['field_delay']['#suffix'] = '<span class="field-delay-suffix">' . t(' seconds to get to the station') . '</span> ';
+
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/modules/gottago_client/statusquery.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/gottago.js';
   $form['#suffix'] .= '<div id="gottago_status_indicator"> </div>';
@@ -426,7 +435,7 @@ function gottago_get_lines_for_station($stationid = FALSE){
   foreach ($response->stationboard as $key => $departure) {
     $line_identifier = gottago_get_line_name($departure) . "|" . $departure->to;
     if (!in_array($line_identifier, $lines)) {
-      $lines[$line_identifier] = t('@line direction @departure_to', array('@line' => gottago_get_line_name($departure), '@departure_to' => $departure->to));
+      $lines[$line_identifier] = '<span class="line-name">' . gottago_get_line_name($departure) . '</span><span class="line-direction">' . $departure->to . '</span>';
     }
   }
   return $lines;
