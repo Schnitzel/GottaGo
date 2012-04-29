@@ -83,22 +83,23 @@ input{
   display: inline;
 }
 
-.field-type-text{
-  border-bottom: 4px solid #b3b3b3;
-}
 
-.form-type-textfield label{
+.page-node-edit .form-type-textfield label{
   display: none;
 }
 
-.form-text{
-  border: none;
+input[type=text],
+input[type=password]{
+	border-top: 0;
+	border-left: 0;
+	border-right: 0;
+  border-bottom: 4px solid #b3b3b3;
   color: #b3b3b3;
 }
 
 html.js input.form-autocomplete{
   background: none;
-  
+
 }
 
 .ajax-progress .message {
@@ -145,8 +146,62 @@ html.js input.form-autocomplete{
   color: #6ec83c;
 }
 
+#edit-field-delay-und-0-value {
+	width: 45px;
+}
+
+.node-type-gottago div.tabs {
+	display: none;
+}
+
 /* @end */
 
+/* @group Overview */
+
+.view-gottago {
+	font-size: 16px;
+}
+
+/* @end */
+
+/* @group Header */
+
+.branding-data {
+	float:left;
+}
+
+.block-gottago {
+	float: right;
+	margin: 63px 50px 0 0;
+}
+
+.block-gottago .content a {
+	color: white;
+	background-color: #6EC83C;
+	padding: 5px 11px;
+	margin-left:10px;
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+.block-gottago .content a:hover {
+	color: #6EC83C;
+	background-color: white;
+}
+
+/* @end */
+
+
+
+
+/* @group User Register/Login/Edit */
+
+.page-user .block-system-main {
+	font-size: 20px;
+}
+
+/* @end */
 
 file will hold styles for the mobile version of your website (mobile first). */
 /* This also can include ANY global CSS that applies site-wide. Unless overwritten by a more specific style rule, CSS declarations in global.css will apply site-wide. */
