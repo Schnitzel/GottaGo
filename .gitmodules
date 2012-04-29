@@ -36,7 +36,7 @@
 	url = git://git.drupal.org/project/omega_tools.git
 [submodule "sites/all/modules/inline_registration"]
 	path = sites/all/modules/inline_registration
-	url = git://git.drupal.org/project/inline_registration.git
+	url = http://fisheye.amazeelabs.com/git/inline_registration.git
 [submodule "sites/all/modules/views_datasource"]
 	path = sites/all/modules/views_datasource
 	url = git://git.drupal.org/project/views_datasource.git
