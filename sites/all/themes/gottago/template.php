@@ -10,3 +10,11 @@
  * for your subtheme grows. Please read the README.txt in the /preprocess and /process subfolders
  * for more information on this topic.
  */
+
+/**
+ * Implements hook_form_alter().
+ */
+function gottago_form_alter(&$form, &$form_state, $form_id) {
+  drupal_add_js(drupal_get_path('theme', 'gottago') .'/js/jquery.html5form.js');
+  drupal_add_js(drupal_get_path('theme', 'gottago') .'/js/gottagoForm.js');
+}
