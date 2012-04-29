@@ -84,14 +84,65 @@ input{
 }
 
 
-.page-node-edit .form-type-textfield label,
-.page-node-add .form-type-textfield label{
+.page-node-add-gottago .form-type-textfield label,
+.page-node-add-gottago .form-type-textfield label{
   display: none;
 }
 
 .page-node-edit .form-item-field-description-und-0-value label,
-.page-node-add .form-item-field-description-und-0-value label {
+.page-node-add-gottago .form-item-field-description-und-0-value label,
+.page-node-add-gottago .form-item-mail label,
+.page-node-add-gottago .form-item-login-form-name label {
 	display: block;
+}
+
+.page-node-add-gottago .form-item-mail .description,
+.page-node-add-gottago .form-item-pass .description,
+.page-node-add-gottago .form-item-login-form-name .description,
+.page-node-add-gottago .form-item-login-form-pass .description{
+	display:none;
+}
+
+.page-node-add-gottago  #edit-field-delay,
+.page-node-edit #edit-field-delay {
+	clear: both;
+}
+
+.page-node-add-gottago .form-item-name {
+	display: none;
+}
+
+
+.page-node-add-gottago .form-actions {
+	clear: both;
+}
+
+.page-node-add-gottago fieldset#edit-register,
+.page-node-add-gottago fieldset#edit-login,
+.page-node-add-gottago fieldset#edit-register input,
+.page-node-add-gottago fieldset#edit-login input,
+.page-node-add-gottago fieldset#edit-register .password-parent,
+.page-node-add-gottago fieldset#edit-register .confirm-parent{
+	width:400px;
+}
+
+.page-node-add-gottago fieldset#edit-register {
+	float:left;
+}
+
+.page-node-add-gottago fieldset#edit-login {
+	float:right;
+}
+
+.page-node-add-gottago fieldset#edit-register .fieldset-description,
+.page-node-add-gottago fieldset#edit-register div.password-confirm {
+	display: none;
+}
+
+
+.page-node-add-gottago fieldset#edit-register .fieldset-legend,
+.page-node-add-gottago fieldset#edit-login .fieldset-legend {
+	color: #6EC83C;
 }
 
 input[type=text],

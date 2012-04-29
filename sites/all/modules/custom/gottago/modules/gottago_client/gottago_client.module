@@ -58,6 +58,7 @@ function gottago_client_delivery_page($page_callback_result) {
             .status_indicator.no_go {
                 background:lightcoral;
             }
+
         </style>';
   $js = drupal_get_js();
   $output = '<html>
@@ -66,6 +67,11 @@ function gottago_client_delivery_page($page_callback_result) {
                 '. $css . $js . '
               </head>
               <body>
+                <div class="informations">
+                  <div class="station_wrapper wrapper"><span class="station_label label">Station: </span><span class="station_text text"></span></div>
+                  <div class="line_wrapper wrapper"><span class="line_label label">Line: </span><span class="line_text text"></span></div>
+                  <div class="description_wrapper wrapper"><span class="description_label label">Description: </span><span class="description_text text"></span></div>
+                </div>
                 <div class="status_indicator" rel="'.arg(1).'"></div>
               </body>
             </html>';

@@ -2,16 +2,28 @@
 
 function gottago_forms_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'gottago_node_form') {
+
     $form['field_station_name']['#type'] = 'hidden';
     $form['field_last_update']['#type'] = 'hidden';
     $form['field_last_device']['#type'] = 'hidden';
     $form['title']['#type'] = 'hidden';
     $form['title']['#required'] = FALSE;
     $form['actions']['submit']['#submit'][] = 'gottago_forms_redirect_submit';
+    unset($form['register']['form']['account']['pass']['#description']);
+    unset($form['register']['form']['account']['mail']['#description']);
   }
   elseif ($form_id == 'user_profile_form') {
     drupal_set_title(t('My Account'));
   }
+  elseif ($form_id == 'user_register_form'){
+    drupal_set_title("Register new account");
+    unset($form['account']['pass']['#description']);
+    unset($form['account']['mail']['#description']);
+  }
+  elseif ($form_id == 'user_login'){
+    drupal_set_title("Login");
+  }
+
 
 }
 

@@ -31,7 +31,7 @@ function GottaGo(status_indicator, query_object){
         off: function handle_off(json){
             if(!isNaN(json.status_changes.go)) {
                 var minutesUntilGo = Math.round(json.status_changes.go/60);
-                status_indicator.text(Drupal.t("@minutesUntilGo minutes to go", {"@minutesUntilGo": minutesUntilGo})).show();
+                status_indicator.text(Drupal.t("@minutesUntilGo minutes", {"@minutesUntilGo": minutesUntilGo})).show();
 
                 // Always show correct relative time
                 if(minutesUntilGo>1){
@@ -89,6 +89,15 @@ function GottaGo(status_indicator, query_object){
             status_indicator.addClass('err').text(error_messages[json.error] || Drupal.t("Unknown error")).show();
         } else {
             // Render current status
+            jQuery('span.station_text').text(json.station);
+            jQuery('span.line_text').text(json.line);
+            if (json.description == "") {
+                jQuery('div.description_wrapper').hide();
+            } else {
+                jQuery('span.description_text').text(json.description);
+                jQuery('div.description_wrapper').show();
+            }
+
             status_indicator.reset().addClass(json.status);
             status_handlers[json.status](json);
 
