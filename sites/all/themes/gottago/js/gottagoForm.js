@@ -23,7 +23,7 @@
     attach: function(context) {
 
 	    jQuery('.form-item-field-line-und label.option', context).click(function(){
-	    	jQuery(this).siblings('input').attr('selected', true).trigger('change');
+	    	jQuery(this).siblings('input').attr('checked', 'checked').trigger('change');
 	      jQuery('.form-item-field-line-und label.option').removeClass('selected');
 	      jQuery(this).addClass('selected');
 	    });
