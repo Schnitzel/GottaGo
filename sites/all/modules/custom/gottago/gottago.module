@@ -426,7 +426,7 @@ function gottago_get_lines_for_station($stationid = FALSE){
   foreach ($response->stationboard as $key => $departure) {
     $line_identifier = gottago_get_line_name($departure) . "|" . $departure->to;
     if (!in_array($line_identifier, $lines)) {
-      $lines[$line_identifier] = t('@departure_name direction @departure_to', array('@departure_name' => $departure->name, '@departure_to' => $departure->to));
+      $lines[$line_identifier] = t('@line direction @departure_to', array('@line' => gottago_get_line_name($departure), '@departure_to' => $departure->to));
     }
   }
   return $lines;
@@ -529,21 +529,16 @@ function gottago_get_id_for_station($station) {
 }
 
 function gottago_get_line_name($departure) {
-  // We consider the first 3 letters if:
-  // name starts with 'S' OR
-  // name starts with 'IR' OR
-  // name starts with 'TGV' OR
-  // name starts with 'BUS' OR
-  // name starts with 'NFB' OR
-  // name starts with 'BAT' OR
-  // name starts with 'N'
+  // We consider the whole name if:
+  // name starts with 'Tram' OR
+  // name starts with 'Bus' OR
+  // name starts with 'Met' OR
+  // name starts with 'Tro'
   // @todo: improve this check.
-  if (strpos($departure->name, 'S') === 0 || strpos($departure->name, 'IR') === 0 ||
-      strpos($departure->name, 'TGV') === 0 || strpos($departure->name, 'BUS') === 0 ||
-      strpos($departure->name, 'NFB') === 0 || strpos($departure->name, 'BAT') === 0 ||
-      strpos($departure->name, 'N') === 0) {
-    return substr($departure->name, 0, 3);
+  if (strpos($departure->name, 'Tram') === 0 || strpos($departure->name, 'Bus') === 0 ||
+      strpos($departure->name, 'Met') === 0 || strpos($departure->name, 'Tro') === 0) {
+    return $departure->name;
   }
-  // All other cases, return the whole name.
-  return $departure->name;
+  // All other cases, return the first 3 strings.
+  return substr($departure->name, 0, 3);
 }
