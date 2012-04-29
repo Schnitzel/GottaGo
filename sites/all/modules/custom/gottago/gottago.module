@@ -32,11 +32,10 @@ function gottago_menu(){
     'page arguments' => array(1, 2),
     'type' => MENU_CALLBACK,
   );
-  $items['gottago_status_direct/%/%/%'] = array(
+  $items['gottago_status_direct'] = array(
     'title' => 'GottaGo Status',
     'access callback' => TRUE,
     'page callback' => 'gottago_status_direct',
-    'page arguments' => array(1, 2, 3),
     'type' => MENU_CALLBACK,
   );
   $items['admin/config/system/gottago_api'] = array(
@@ -122,13 +121,13 @@ function gottago_status($gottago_node = NULL, $response = "json") {
  *
  * If the node is not specified, it tries to load the ids from $_GET.
  */
-function gottago_status_direct($station, $line, $delay) {
+function gottago_status_direct() {
   // If we have the gottago node, print the result only for it.
 
   $gottago_query_array = array(
-    'station' => $station,
-    'line' => $line,
-    'delay' => $delay
+    'station' => $_GET['station'],
+    'line' => $_GET['line'],
+    'delay' => $_GET['delay']
   );
   $result = gottago_api('go_status', $gottago_query_array);
 
@@ -197,7 +196,7 @@ function gottago_api($type, $gottago_query_array = NULL, $gottago_node = NULL) {
  */
 function gottago_api_go_status($gottago_query_array) {
   // Prepare the data to query the API.
-  $params['id'] = $gottago_query_array['station'];
+  $params['id'] = gottago_get_id_for_station($gottago_query_array['station']);
   $query_result = gottago_api_query($params);
   $response = array();
 
@@ -357,13 +356,18 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   $form['field_station']['und'][0]['value']['#size'] = 0;
   $form['field_station']['#prefix'] = '<span class="field-station-prefix">' . t('I want to leave from') . '</span> ';
   $form['field_station']['#suffix'] = '<div id="gottago-line" class="gottago-line"></div>';
-  if (isset($form_state['values']['field_station']['und'][0]['value'])) {
-    $stationid = $form_state['values']['field_station']['und'][0]['value'];
+  $default_value = NULL;
+  if (isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value']) || isset($form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'])) {
+    $stationid = isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value'])?$form_state['values']['field_station'][LANGUAGE_NONE][0]['value']:$form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'];
     $radio_options = gottago_get_lines_for_station($stationid);
+    if ($form['#node']->field_line[LANGUAGE_NONE][0]['value']) {
+      $default_value = $form['#node']->field_line[LANGUAGE_NONE][0]['value'];
+    }
   }
   if (isset($radio_options)) {
-    $form['field_line']['und']['#options'] = $radio_options;
+    $form['field_line'][LANGUAGE_NONE]['#options'] = $radio_options;
     $form['field_line']['#access'] = TRUE;
+    $form['field_line'][LANGUAGE_NONE]['#default_value'] = $default_value;
     $form['field_line']['#prefix'] = '<div id="gottago-line" class="gottago-line">';
     $form['field_line']['#suffix'] = '</div>';
   } else {
@@ -373,6 +377,9 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   $form['field_delay']['#prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
   $form['field_delay']['#suffix'] = '<span class="field-delay-suffix">' . t(' seconds to get to the station') . '</span> ';
   
+  $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/modules/gottago_client/statusquery.js';
+  $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/gottago.js';
+  $form['#suffix'] .= '<div id="gottago_status_indicator"> </div>';
 }
 
 function gottago_autocomplete($string) {
@@ -416,17 +423,8 @@ function gottago_get_lines_for_station($stationid = FALSE){
   // If the station id is a string, make a call to the transport api and get
   // the station id.
   // @todo: unify the API request with the gottago_api_query() function.
-  if (!is_numeric($stationid)) {
-    $result = drupal_http_request('http://transport.opendata.ch/api.php/v1/locations?query=' . $stationid . '&type=station');
-    $matches = array();
-    if ($result->code == 200) {
-      $data = json_decode(($result->data));
-      if ($data->stations && count(($data->stations))) {
-        $station = current($data->stations);
-        $stationid = $station->id;
-      }
-    }
-  }
+  // Make sure we have the id of the station.
+  $stationid = gottago_get_id_for_station($stationid);
   $response = gottago_api_query(array('id' => $stationid));
   $lines = array();
 
@@ -435,7 +433,7 @@ function gottago_get_lines_for_station($stationid = FALSE){
    * So we just go through all departs and get the possible lines from it.
    */
   foreach ($response->stationboard as $key => $departure) {
-    $line_identifier = $departure->name . "|" . $departure->to;
+    $line_identifier = gottago_get_line_name($departure) . "|" . $departure->to;
     if (!in_array($line_identifier, $lines)) {
       $lines[$line_identifier] = '<span class="line-name">' . $departure->name . '</span><span class="line-direction">' . $departure->to . '</span>';
     }
@@ -475,7 +473,7 @@ function gottago_get_next_refresh($second_next_departure, $gottago_query_array, 
 function gottago_get_departure($stationid, $line_identifier, $api_response = NULL, $offset = 0){
   // If we have no $api_response, generate one now.
   if (!$api_response) {
-    $params['id'] = $stationid;
+    $params['id'] = gottago_get_id_for_station($stationid);
     $api_response = gottago_api_query($params);
   }
   if ($api_response) {
@@ -489,7 +487,7 @@ function gottago_get_departure($stationid, $line_identifier, $api_response = NUL
 
     foreach ($api_response->stationboard as $key => $departure) {
       // Is the found depart for the line we are searching for?
-      if ($line_name == $departure->name && $line_to == $departure->to) {
+      if ($line_name == gottago_get_line_name($departure) && $line_to == $departure->to) {
         // Maybe we have to skip this result.
         if ($offset == 0) {
           $departure_time = (isset($departure->stop->prognosis->time)) ? $departure->stop->prognosis->time : $departure->stop->departure;
@@ -514,4 +512,47 @@ function gottago_get_departure($stationid, $line_identifier, $api_response = NUL
     return $departure_object;
   }
   return FALSE;
+}
+
+/**
+ * Returns the id of a station name.
+ */
+function gottago_get_id_for_station($station) {
+  // @todo: we could cache the station ids on our local system...
+  $station_ids = &drupal_static(__FUNCTION__);
+  // If the station is already a number, just return it back.
+  if (is_numeric($station)) {
+    return $station;
+  }
+  if (!isset($station_ids[$station])) {
+    $result = drupal_http_request('http://transport.opendata.ch/api.php/v1/locations?query=' . $station . '&type=station');
+    if ($result->code == 200) {
+      $data = json_decode(($result->data));
+      if ($data->stations && count(($data->stations))) {
+        $station_object = current($data->stations);
+        $station_ids[$station] = $station_object->id;
+      }
+    }
+  }
+  return $station_ids[$station];
+}
+
+function gottago_get_line_name($departure) {
+  // We consider the first 3 letters if:
+  // name starts with 'S' OR
+  // name starts with 'IR' OR
+  // name starts with 'TGV' OR
+  // name starts with 'BUS' OR
+  // name starts with 'NFB' OR
+  // name starts with 'BAT' OR
+  // name starts with 'N'
+  // @todo: improve this check.
+  if (strpos($departure->name, 'S') === 0 || strpos($departure->name, 'IR') === 0 ||
+      strpos($departure->name, 'TGV') === 0 || strpos($departure->name, 'BUS') === 0 ||
+      strpos($departure->name, 'NFB') === 0 || strpos($departure->name, 'BAT') === 0 ||
+      strpos($departure->name, 'N') === 0) {
+    return substr($departure->name, 0, 3);
+  }
+  // All other cases, return the whole name.
+  return $departure->name;
 }

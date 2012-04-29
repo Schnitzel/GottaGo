@@ -13,7 +13,6 @@ function gottago_client_menu() {
     'title' => 'GottaGo Client',
     'access callback' => TRUE,
     'page callback' => 'gottago_client_page',
-    'page arguments' => array(1),
     'type' => MENU_CALLBACK,
   );
   return $items;
@@ -23,17 +22,25 @@ function gottago_client_page_delivery_callback_alter(&$delivery_callback) {
   if (arg(0) == 'gottago_client') {
     $delivery_callback = 'gottago_client_delivery_page';
   }
+  drupal_add_js(drupal_get_path('module', 'gottago_client') . '/statusquery.js');
+  drupal_add_js(drupal_get_path('module', 'gottago_client') . '/gottago_client.js');
 }
 
-function gottago_client_page($id) {
-  drupal_add_js(array('gottago' => array('id' => $id)), 'setting');
+function gottago_client_page() {
+
+}
+
+/**
+ * Implements hook_init().
+ */
+function gottago_client_init() {
   drupal_add_js(drupal_get_path('module', 'gottago_client') . '/statusquery.js');
   drupal_add_js(drupal_get_path('module', 'gottago_client') . '/gottago_client.js');
 }
 
 function gottago_client_delivery_page($page_callback_result) {
   $css = '<style type="text/css">
-            #status_indicator {
+            .status_indicator {
                 display:none;
                 font-size: 5em;
                 background: #eee;
@@ -41,14 +48,14 @@ function gottago_client_delivery_page($page_callback_result) {
                 padding:0.25em;
                 margin: 1em;
             }
-            #status_indicator.error {
+            .status_indicator.error {
                  background: red;
             }
-            #status_indicator.off {}
-            #status_indicator.go {
+            .status_indicator.off {}
+            .status_indicator.go {
                 background:lightgreen;
             }
-            #status_indicator.no_go {
+            .status_indicator.no_go {
                 background:lightcoral;
             }
         </style>';
@@ -59,12 +66,12 @@ function gottago_client_delivery_page($page_callback_result) {
                 '. $css . $js . '
               </head>
               <body>
-                <div id="status_indicator"></div>
+                <div class="status_indicator" rel="'.arg(1).'"></div>
               </body>
             </html>';
   print $output;
   /*echo '<pre>';
-  
+
   print_r($js);
   $html = theme('html');
   print_r($page_callback_result); die();*/
