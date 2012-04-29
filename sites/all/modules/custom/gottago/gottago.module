@@ -369,6 +369,10 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   } else {
     $form['field_line']['#access'] = FALSE;
   }
+  
+  $form['field_delay']['#prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
+  $form['field_delay']['#suffix'] = '<span class="field-delay-suffix">' . t(' seconds to get to the station') . '</span> ';
+  
 }
 
 function gottago_autocomplete($string) {
