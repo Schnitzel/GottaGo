@@ -191,6 +191,21 @@ input[type=submit]:hover {
 	top: 11px;
 }
 
+.new_gottago_link a {
+	color: white;
+	background-color: #41A6D9;
+	padding: 5px 11px;
+	margin-left:10px;
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+.new_gottago_link a:hover {
+	color: #41A6D9;
+	background-color: white;
+}
+
 /* @end */
 
 /* @group Header */
@@ -208,8 +223,7 @@ input[type=submit]:hover {
 	margin: 63px 0 0 0;
 }
 
-.block-gottago .content a,
-.new_gottago_link a {
+.block-gottago .content a {
 	color: white;
 	background-color: #6EC83C;
 	padding: 5px 11px;
@@ -219,10 +233,27 @@ input[type=submit]:hover {
 	-moz-border-radius: 5px;
 }
 
-.block-gottago .content a:hover,
-.new_gottago_link a:hover {
+.block-gottago .content a:hover {
 	color: #6EC83C;
 	background-color: white;
+}
+
+.block-main-menu {
+	position: absolute;
+	right: 0;
+}
+
+.block-main-menu ul,
+.block-main-menu ul li{
+	list-style: none;
+}
+
+.block-main-menu a {
+	color:#6EC83C;
+}
+
+.block-main-menu a:hover {
+	text-decoration:underline;
 }
 
 /* @end */
@@ -236,7 +267,12 @@ input[type=submit]:hover {
 	font-size: 20px;
 }
 
-.password-strength {
+.password-strength,
+.password-suggestions {
+	display: none!important;
+}
+
+.page-user div.tabs {
 	display: none;
 }
 
