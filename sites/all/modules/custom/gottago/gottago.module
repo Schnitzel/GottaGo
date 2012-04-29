@@ -468,6 +468,7 @@ function gottago_get_lines_for_station($stationid = FALSE){
       $lines[$line_identifier] = '<span class="line-name">' . gottago_get_line_name($departure) . '</span><span class="line-direction">' . $departure->to . '</span>';
     }
   }
+  asort($lines);
   return $lines;
 }
 
