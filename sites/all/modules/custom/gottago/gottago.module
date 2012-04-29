@@ -3,6 +3,7 @@
 define('GOTTAGO_FIELD_STATION', 'field_station');
 define('GOTTAGO_FIELD_LINE', 'field_line');
 define('GOTTAGO_FIELD_DELAY', 'field_delay');
+define('GOTTAGO_FIELD_DESCRIPTION', 'field_description');
 
 /**
  * Implements hook_permission().
@@ -358,7 +359,7 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   );
   $form[GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
   $form[GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']['#attributes'] = array(
-    'placeholder' => t('Name of station')
+    'placeholder' => t('e.g. Zürich HB')
   );
   $form[GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']['#size'] = 0;
   $form[GOTTAGO_FIELD_STATION]['#prefix'] = '<span class="field-station-prefix">' . t('I want to leave from') . '</span> ';
@@ -379,8 +380,9 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
     $form[GOTTAGO_FIELD_LINE][LANGUAGE_NONE]['#default_value'] = $default_value;
   } else {
     $form[GOTTAGO_FIELD_LINE]['#access'] = FALSE;
-    $form[GOTTAGO_FIELD_STATION]['#suffix'] = '<div id="edit-field-line"></div>';
+    $form[GOTTAGO_FIELD_STATION]['#suffix'] = '<div id="edit-field-line"></div><div class="clearfix"></div>';
   }
+  $form[GOTTAGO_FIELD_LINE][LANGUAGE_NONE]['#title'] = t('I want to take');
   
   // Also hide the delay field if we do not have any valid default value.
   if (isset($radio_options) && count($radio_options) && ($default_value || $form_state['values'][GOTTAGO_FIELD_LINE][LANGUAGE_NONE][0]['value'])) {
@@ -392,11 +394,17 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   }
 
   $form[GOTTAGO_FIELD_DELAY][LANGUAGE_NONE][0]['value']['#field_prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
-  $form[GOTTAGO_FIELD_DELAY][LANGUAGE_NONE][0]['value']['#field_suffix'] = '<span class="field-delay-suffix">' . t(' minutes to get to the station') . '</span> ';
+  $form[GOTTAGO_FIELD_DELAY][LANGUAGE_NONE][0]['value']['#field_suffix'] = '<span class="field-delay-suffix">' . t(' minutes to get to the station') . '</span> <div id="gottago_status_indicator"> </div>';
 
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/modules/gottago_client/statusquery.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/gottago.js';
-  $form[GOTTAGO_FIELD_DELAY]['#suffix'] .= '<div id="gottago_status_indicator"> </div>';
+  
+  $form[GOTTAGO_FIELD_DESCRIPTION][LANGUAGE_NONE][0]['value']['#attributes'] = array(
+    'placeholder' => t('e.g. "Home" or "Office"')
+  );
+  $form[GOTTAGO_FIELD_DESCRIPTION][LANGUAGE_NONE][0]['value']['#size'] = 0;
+  
+  $form['actions']['submit']['#value'] = t('Go for it!');
 }
 
 function gottago_autocomplete($string) {
