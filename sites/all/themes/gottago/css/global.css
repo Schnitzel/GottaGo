@@ -315,6 +315,12 @@ input[type=submit]:hover {
 	font-size: 18px;
 }
 
+
+.node-type-page p {
+	margin: 0 0 20px 0;
+}
+
+
 /* @end */
 
 /* @group User Register/Login/Edit */
