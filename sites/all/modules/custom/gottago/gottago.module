@@ -346,8 +346,9 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   drupal_set_title(t('Never miss your connection again. Here we go:'));
   $form['field_station']['und'][0]['value']['#ajax'] = array(
     'callback' => 'gottago_ajax_callback_field_station_select',
-    'wrapper' => 'gottago-line',
+    'wrapper' => 'edit-field-line',
     'event' => 'blur',
+    'method' => 'html',
   );
   $form['field_station']['und'][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
   $form['field_station']['und'][0]['value']['#attributes'] = array(
@@ -355,7 +356,6 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   );
   $form['field_station']['und'][0]['value']['#size'] = 0;
   $form['field_station']['#prefix'] = '<span class="field-station-prefix">' . t('I want to leave from') . '</span> ';
-  $form['field_station']['#suffix'] = '<div id="gottago-line" class="gottago-line"></div>';
   $default_value = NULL;
   if (isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value']) || isset($form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'])) {
     $stationid = isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value'])?$form_state['values']['field_station'][LANGUAGE_NONE][0]['value']:$form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'];
@@ -368,8 +368,6 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
     $form['field_line'][LANGUAGE_NONE]['#options'] = $radio_options;
     $form['field_line']['#access'] = TRUE;
     $form['field_line'][LANGUAGE_NONE]['#default_value'] = $default_value;
-    $form['field_line']['#prefix'] = '<div id="gottago-line" class="gottago-line">';
-    $form['field_line']['#suffix'] = '</div>';
   } else {
     $form['field_line']['#access'] = FALSE;
   }
