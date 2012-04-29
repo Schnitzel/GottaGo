@@ -10,12 +10,26 @@
 // adding a small wrapper around your JavaScript code. See:
 // - http://drupal.org/node/224333#javascript_compatibility
 // - http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
-(function ($) {
-  jQuery(function() {
-    jQuery('#edit-field-station-und-0-value').width(jQuery('#gottago-node-form').width() - jQuery('.field-station-prefix').width() - 100);
-    jQuery('.field-widget-options-buttons .option').live('click', function(){
-      jQuery('.field-widget-options-buttons .option').removeClass('selected');
-      jQuery(this).addClass('selected');
-    });
-  });
+(function ($){
+
+
+  Drupal.behaviors.initGottagoStationWidth = {
+    attach: function(context) {
+	    jQuery('#edit-field-station-und-0-value').width(jQuery('#gottago-node-form').width() - jQuery('.field-station-prefix').width() - 100);
+    }
+  }
+
+  Drupal.behaviors.initGottagoClickLine = {
+    attach: function(context) {
+
+	    jQuery('.form-item-field-line-und label.option', context).click(function(){
+	    	jQuery(this).siblings('input').attr('checked', 'checked').trigger('change');
+	      jQuery('.form-item-field-line-und label.option').removeClass('selected');
+	      jQuery(this).addClass('selected');
+	    });
+
+    }
+  }
+
+
 })(jQuery);

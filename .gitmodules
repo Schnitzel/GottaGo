@@ -52,3 +52,9 @@
 [submodule "sites/all/modules/i18n"]
 	path = sites/all/modules/i18n
 	url = git://git.drupal.org/project/i18n.git
+[submodule "sites/all/modules/variable"]
+	path = sites/all/modules/variable
+	url = git://git.drupal.org/project/variable.git
+[submodule "sites/all/modules/l10n_update"]
+	path = sites/all/modules/l10n_update
+	url = git://git.drupal.org/project/l10n_update.git

@@ -76,6 +76,11 @@ input{
   font-size: 1em;
 }
 
+.field-station-prefix{
+  float: left;
+  margin-right: 10px;
+}
+
 #edit-field-station-und-0-value,
 #edit-field-delay-und-0-value{
   display: inline;
@@ -199,7 +204,7 @@ html.js input.throbbing {
   padding: 0.5em;
   text-align: center;
   margin: 2em 0;
-  heigth:46px;
+  height:46px;
 }
 
 #gottago_status_indicator.off{
