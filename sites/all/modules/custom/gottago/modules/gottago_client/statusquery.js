@@ -1,33 +1,4 @@
-/**
- * Scheduler that allows abortion of scheduled tasks
- */
-function Scheduler(){
-    /**
-     * List of pending or executed timeout handles
-     * @type Array.<Integer>
-     */
-    var timeouts = [];
 
-    /**
-     * Aborts all running timeouts
-     */
-    this.clearAll = function(){
-        jQuery.each(timeouts, function(index, timeout){
-            // Abort timeout
-            clearTimeout(timeout);
-        });
-        timeouts = [];
-    };
-
-    /**
-     * Schedules a function for later execution and keeps a handle for abortion.
-     * @param {Function} callback Delayed function
-     * @param {Number} milliseconds Amount of time to delay execution
-     */
-    this.schedule = function(callback, milliseconds){
-        timeouts.push(setTimeout(callback, milliseconds));
-    };
-}
 
 /**
  * Handler for web service's JSON protocol. Shows status messages and errors.
@@ -44,7 +15,6 @@ function GottaGo(status_indicator, query_object){
         var line = query_object['line'];
         var delay = query_object['delay'];
     }
-    var timeouts = new Scheduler();
     var error_messages = {
         no_api: "Statusinformationen sind derzeit nicht verfügbar. Bitte zu einem späteren Zeitpunkt erneut versuchen.",
         not_configured: "Der eingegebene Schlüssel wurde noch nicht konfiguriert. Bitte auf der Website einloggen und Schlüssel konfigurieren.",
@@ -66,7 +36,7 @@ function GottaGo(status_indicator, query_object){
                 if(minutesUntilGo>1){
                     var updatedStatusChanges = jQuery.extend({}, json.status_changes, {go:json.status_changes.go-60});
                     var updatedJson = jQuery.extend({}, json, {status_changes: updatedStatusChanges});
-                    timeouts.schedule(function(){
+                    status_indicator.schedule(function(){
                         status_handlers.off(updatedJson);
                     }, 60*1000);
                 }
@@ -108,7 +78,7 @@ function GottaGo(status_indicator, query_object){
      */
     status_indicator.parseResponse = function parse(json){
         status_indicator.reset();
-        timeouts.clearAll();
+        status_indicator.clearAll();
         if(json.constructor!==({}).constructor){
             status_indicator.addClass('error').text("Falsche Daten vom Server erhalten.").show();
             return;
@@ -125,7 +95,7 @@ function GottaGo(status_indicator, query_object){
                 var delay = json.status_changes[status];
                 if(!isNaN(delay)){
                     // Schedule status changes for future states
-                    timeouts.schedule(function(){
+                    status_indicator.schedule(function(){
                         status_indicator.reset().addClass(status);
                         handler(json);
                     }, delay*1000);
@@ -134,16 +104,45 @@ function GottaGo(status_indicator, query_object){
         }
 
         // Schedule another request to the server
-        timeouts.schedule(status_indicator.query, (json.next_refresh||60)*1000);
+        status_indicator.schedule(status_indicator.query, (json.next_refresh||60)*1000);
     };
+
+
 
     status_indicator.handleRequestError = function(){
         status_indicator.reset();
         status_indicator.addClass('error').text("Server nicht erreichbar.").show();
 
-        timeouts.clearAll();
+        status_indicator.clearAll();
         // Try again in 1min and hope service is up again
-        timeouts.schedule(status_indicator.query, 60*1000);
+        status_indicator.schedule(status_indicator.query, 60*1000);
     };
     status_indicator.query();
+
+
+        /**
+         * List of pending or executed timeout handles
+         * @type Array.<Integer>
+         */
+        var timeouts = [];
+
+        /**
+         * Aborts all running timeouts
+         */
+        status_indicator.clearAll = function(){
+            jQuery.each(timeouts, function(index, timeout){
+                // Abort timeout
+                clearTimeout(timeout);
+            });
+            timeouts = [];
+        };
+
+        /**
+         * Schedules a function for later execution and keeps a handle for abortion.
+         * @param {Function} callback Delayed function
+         * @param {Number} milliseconds Amount of time to delay execution
+         */
+        status_indicator.schedule = function(callback, milliseconds){
+            timeouts.push(setTimeout(callback, milliseconds));
+        };
 }
