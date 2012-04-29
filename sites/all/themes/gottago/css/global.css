@@ -336,8 +336,7 @@ input[type=submit]:hover {
 }
 
 .block-gottago .content a:hover {
-	color: #6EC83C;
-	background-color: white;
+	background-color: #82ee4d;
 }
 
 .block-main-menu {
