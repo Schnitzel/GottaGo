@@ -12,11 +12,18 @@
 // - http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
 (function ($){
 
+
+  Drupal.behaviors.initGottagoStationWidth = {
+    attach: function(context) {
+	    jQuery('#edit-field-station-und-0-value').width(jQuery('#gottago-node-form').width() - jQuery('.field-station-prefix').width() - 100);
+    }
+  }
+
   Drupal.behaviors.initGottagoClickLine = {
     attach: function(context) {
 
 	    jQuery('.form-item-field-line-und label.option', context).click(function(){
-	    	jQuery(this).siblings('input').attr('checked', true);
+	    	jQuery(this).siblings('input').attr('selected', true).trigger('change');
 	      jQuery('.form-item-field-line-und label.option').removeClass('selected');
 	      jQuery(this).addClass('selected');
 	    });
