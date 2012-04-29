@@ -34,3 +34,6 @@
 [submodule "sites/all/modules/omega_tools"]
 	path = sites/all/modules/omega_tools
 	url = git://git.drupal.org/project/omega_tools.git
+[submodule "sites/all/modules/inline_registration"]
+	path = sites/all/modules/inline_registration
+	url = git://git.drupal.org/project/inline_registration.git

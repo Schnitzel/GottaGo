@@ -3,14 +3,30 @@
   
   Drupal.behaviors.initGottago = {
     attach: function(context) {
-      updateDirectGottaGo();
       $('input[name="field_line[und]"]', context).not('.gottago-processed').addClass('gottago-processed').bind('click', function(event) {
         updateDirectGottaGo();
-        scrollToDelay();
       });
       $('input[name="field_delay[und][0][value]"]', context).not('.gottago-processed').addClass('gottago-processed').bind('change', function(event) {
         updateDirectGottaGo();
       });
+      $('#edit-submit', context).bind('click', function(event) {
+        // If there is no description, show the description field.
+        // @todo: also show the login/register.
+        if ($('input[name="field_description[und][0][value]"]').parent().is(':hidden')) {
+          $('input[name="field_description[und][0][value]"]').parent().slideDown();
+          $('#edit-register').slideDown();
+          $('#edit-login').slideDown();
+          return false;
+        }
+      });
+      if ($('input[name="field_description[und][0][value]"]', context).val() == '') {
+        $('input[name="field_description[und][0][value]"]', context).parent().hide();
+        $('#edit-register', context).hide();
+        $('#edit-login', context).hide();
+        $('#edit-actions', context).hide();
+      }
+      scrollToDelay();
+      updateDirectGottaGo();
     }
   }
 
@@ -34,8 +50,10 @@
   function scrollToDelay() {
     var target_offset = $('input[name="field_delay[und][0][value]"]').offset();
     if (target_offset) {
-      var target_top = target_offset.top - 200;
-      $('html body').animate({scrollTop:target_top}, 1200);
+      var target_top = target_offset.top - 100;
+      $('html, body').animate({scrollTop:target_top}, 1200);
+      // When we scroll to the delay, we can also show the buttons.
+      $('#edit-actions').show();
     }
   }
 

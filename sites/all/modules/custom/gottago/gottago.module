@@ -344,41 +344,59 @@ function gottago_get_next_statuses($next_departure, $second_next_departure, $got
  */
 function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   drupal_set_title(t('Never miss your connection again. Here we go:'));
-  $form['field_station']['und'][0]['value']['#ajax'] = array(
+  $form[GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']['#ajax'] = array(
     'callback' => 'gottago_ajax_callback_field_station_select',
     'wrapper' => 'edit-field-line',
     'event' => 'blur',
     'method' => 'html',
   );
-  $form['field_station']['und'][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
-  $form['field_station']['und'][0]['value']['#attributes'] = array(
+  $form[GOTTAGO_FIELD_LINE][LANGUAGE_NONE]['#ajax'] = array(
+    'callback' => 'gottago_ajax_callback_field_line_select',
+    'wrapper' => 'edit-field-delay',
+    'event' => 'change',
+    'method' => 'html',
+  );
+  $form[GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
+  $form[GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']['#attributes'] = array(
     'placeholder' => t('Name of station')
   );
-  $form['field_station']['und'][0]['value']['#size'] = 0;
-  $form['field_station']['#prefix'] = '<span class="field-station-prefix">' . t('I want to leave from') . '</span> ';
+  $form[GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']['#size'] = 0;
+  $form[GOTTAGO_FIELD_STATION]['#prefix'] = '<span class="field-station-prefix">' . t('I want to leave from') . '</span> ';
   $default_value = NULL;
-  if (isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value']) || isset($form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'])) {
-    $stationid = isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value'])?$form_state['values']['field_station'][LANGUAGE_NONE][0]['value']:$form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'];
+  if (isset($form_state['values'][GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']) || isset($form[GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']['#default_value'])) {
+    $stationid = isset($form_state['values'][GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value'])?$form_state['values'][GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']:$form[GOTTAGO_FIELD_STATION][LANGUAGE_NONE][0]['value']['#default_value'];
     $radio_options = gottago_get_lines_for_station($stationid);
-    if ($form['#node']->field_line[LANGUAGE_NONE][0]['value']) {
-      $default_value = $form['#node']->field_line[LANGUAGE_NONE][0]['value'];
+    if ($form['#node']->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value']) {
+      $default_value = $form['#node']->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'];
     }
   }
+  if (is_array($radio_options) && !in_array($default_value, array_keys($radio_options))) {
+    $default_value = NULL;
+  }
   if (isset($radio_options)) {
-    $form['field_line'][LANGUAGE_NONE]['#options'] = $radio_options;
-    $form['field_line']['#access'] = TRUE;
-    $form['field_line'][LANGUAGE_NONE]['#default_value'] = $default_value;
+    $form[GOTTAGO_FIELD_LINE][LANGUAGE_NONE]['#options'] = $radio_options;
+    $form[GOTTAGO_FIELD_LINE]['#access'] = TRUE;
+    $form[GOTTAGO_FIELD_LINE][LANGUAGE_NONE]['#default_value'] = $default_value;
   } else {
-    $form['field_line']['#access'] = FALSE;
-    $form['field_station']['#suffix'] = '<div id="edit-field-line"></div>';
+    $form[GOTTAGO_FIELD_LINE]['#access'] = FALSE;
+    $form[GOTTAGO_FIELD_STATION]['#suffix'] = '<div id="edit-field-line"></div>';
+  }
+  
+  // Also hide the delay field if we do not have any valid default value.
+  if (isset($radio_options) && count($radio_options) && ($default_value || $form_state['values'][GOTTAGO_FIELD_LINE][LANGUAGE_NONE][0]['value'])) {
+    $form[GOTTAGO_FIELD_DELAY]['#access'] = TRUE;
+  }
+  else {
+    $form[GOTTAGO_FIELD_DELAY]['#access'] = FALSE;
+    $form[GOTTAGO_FIELD_STATION]['#suffix'] .= '<div id="edit-field-delay"></div>';
   }
 
-  $form['field_delay']['#prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
-  $form['field_delay']['#suffix'] = '<span class="field-delay-suffix">' . t(' minutes to get to the station') . '</span> ';
+  $form[GOTTAGO_FIELD_DELAY][LANGUAGE_NONE][0]['value']['#field_prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
+  $form[GOTTAGO_FIELD_DELAY][LANGUAGE_NONE][0]['value']['#field_suffix'] = '<span class="field-delay-suffix">' . t(' minutes to get to the station') . '</span> ';
 
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/modules/gottago_client/statusquery.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/gottago.js';
-  $form['#suffix'] .= '<div id="gottago_status_indicator"> </div>';
+  $form[GOTTAGO_FIELD_DELAY]['#suffix'] .= '<div id="gottago_status_indicator"> </div>';
 }
 
 function gottago_autocomplete($string) {
@@ -401,7 +419,11 @@ function gottago_autocomplete($string) {
  * currently selected translator plugin.
  */
 function gottago_ajax_callback_field_station_select($form, &$form_state) {
-  return $form['field_line'];
+  return $form[GOTTAGO_FIELD_LINE];
+}
+
+function gottago_ajax_callback_field_line_select($form, &$form_state) {
+  return $form[GOTTAGO_FIELD_DELAY];
 }
 
 /**
@@ -431,6 +453,7 @@ function gottago_get_lines_for_station($stationid = FALSE){
    * There is no really possibility to get all lines for a station.
    * So we just go through all departs and get the possible lines from it.
    */
+
   foreach ($response->stationboard as $key => $departure) {
     $line_identifier = gottago_get_line_name($departure) . "|" . $departure->to;
     if (!in_array($line_identifier, $lines)) {
