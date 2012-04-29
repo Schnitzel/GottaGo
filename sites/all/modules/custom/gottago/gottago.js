@@ -6,6 +6,7 @@
       updateDirectGottaGo();
       $('input[name="field_line[und]"]', context).not('.gottago-processed').addClass('gottago-processed').bind('click', function(event) {
         updateDirectGottaGo();
+        scrollToDelay();
       });
       $('input[name="field_delay[und][0][value]"]', context).not('.gottago-processed').addClass('gottago-processed').bind('change', function(event) {
         updateDirectGottaGo();
@@ -27,6 +28,14 @@
         gottaGo.destroy();
       }
       gottaGo = new GottaGo($('#gottago_status_indicator'), { station: station, line: line, delay: delay});
+    }
+  }
+  
+  function scrollToDelay() {
+    var target_offset = $('input[name="field_delay[und][0][value]"]').offset();
+    if (target_offset) {
+      var target_top = target_offset.top - 200;
+      $('html body').animate({scrollTop:target_top}, 1200);
     }
   }
 
