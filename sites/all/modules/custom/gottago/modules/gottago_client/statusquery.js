@@ -120,7 +120,7 @@ function GottaGo(status_indicator, query_object){
     };
     
     this.destroy = function() {
-      timeouts.clearAll();
+      status_indicator.clearAll();
       status_indicator.reset();
     }
     

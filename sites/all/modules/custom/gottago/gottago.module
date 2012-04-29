@@ -370,6 +370,7 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
     $form['field_line'][LANGUAGE_NONE]['#default_value'] = $default_value;
   } else {
     $form['field_line']['#access'] = FALSE;
+    $form['field_station']['#suffix'] = '<div id="edit-field-line"></div>';
   }
 
   $form['field_delay']['#prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
