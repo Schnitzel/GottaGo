@@ -309,8 +309,13 @@ input[type=submit]:hover {
 
 /* @end */
 
+/* @group About Page */
 
+.node-type-page .block-system-main {
+	font-size: 18px;
+}
 
+/* @end */
 
 /* @group User Register/Login/Edit */
 
