@@ -48,6 +48,7 @@ body{
 
 #page-title{
   color: #6ec83c;
+  margin-bottom: 1em;
 }
 
 /* @group Tags */
@@ -73,7 +74,29 @@ a:visited{
 
 input{
   font-size: 1em;
+}
+
+#edit-field-station-und-0-value,
+#edit-field-delay-und-0-value{
   display: inline;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  border-bottom: 4px solid #b3b3b3;
+}
+
+#edit-field-description-und-0-value{
+  width: 100%;
+}
+
+edit-field-station,
+#edit-field-delay,
+#edit-field-line{
+  margin: 1em 0;
+}
+
+div.form-item.form-item-field-description-und-0-value{
+  display: block;
 }
 
 .field-type-text,
@@ -147,16 +170,46 @@ input{
 
 input[type=text],
 input[type=password]{
-	border-top: 0;
-	border-left: 0;
-	border-right: 0;
-  border-bottom: 4px solid #b3b3b3;
+  border: 2px solid #ededed;
   color: #b3b3b3;
 }
 
-html.js input.form-autocomplete{
+html.js input.form-autocomplete {
   background: none;
+}
 
+html.js input.throbbing {
+  background: url(../images/ajax-loader.gif) no-repeat 100% 16px;
+}
+
+.ajax-progress{
+  position: relative;
+}
+
+.ajax-progress, .ajax-progress-throbber,
+.ajax-progress .throbber{
+  position: absolute;
+  background: url(../images/ajax-loader.gif) no-repeat;
+}
+
+#gottago_status_indicator{
+  border: 1px solid #6EC83C;
+  color: #6EC83C;
+  display: block;
+  padding: 0.5em;
+  text-align: center;
+  margin: 2em 0;
+  heigth:46px;
+}
+
+#gottago_status_indicator.off{
+  border: 1px solid #B3B3B3;
+  color: #B3B3B3;
+}
+
+#gottago_status_indicator.no_go{
+  border: 1px solid #e6171e;
+  color: #e6171e;
 }
 
 .ajax-progress .message {
@@ -223,8 +276,7 @@ input[type=submit] {
 }
 
 input[type=submit]:hover {
-	background-color:white;
-	color:#41A6D9;
+	background-color: #4abef9;
 	cursor: pointer;
 }
 
@@ -285,8 +337,7 @@ input[type=submit]:hover {
 }
 
 .block-gottago .content a:hover {
-	color: #6EC83C;
-	background-color: white;
+	background-color: #82ee4d;
 }
 
 .block-main-menu {
@@ -297,6 +348,10 @@ input[type=submit]:hover {
 .block-main-menu ul,
 .block-main-menu ul li{
 	list-style: none;
+}
+
+.block-main-menu ul li {
+	float:left;
 }
 
 .block-main-menu a {
@@ -340,7 +395,7 @@ input[type=submit]:hover {
 
 /* @end */
 
-file will hold styles for the mobile version of your website (mobile first). */
+/* file will hold styles for the mobile version of your website (mobile first). */
 /* This also can include ANY global CSS that applies site-wide. Unless overwritten by a more specific style rule, CSS declarations in global.css will apply site-wide. */
 #status_indicator {
     display:none;
