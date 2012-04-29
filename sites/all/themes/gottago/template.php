@@ -62,3 +62,26 @@ function gottago_lt_username_title($variables) {
       break;
   }
 }
+
+function gottago_preprocess_html(){
+	drupal_add_js('
+		var is_ssl = ("https:" == document.location.protocol);
+  		var asset_host = is_ssl ? "https://d3rdqalhjaisuu.cloudfront.net/" : "http://d3rdqalhjaisuu.cloudfront.net/";
+  		document.write(unescape("%3Cscript src=\'" + asset_host + "javascripts/feedback-v2.js\' type=\'text/javascript\'%3E%3C/script%3E"));
+		',
+    	array('type' => 'inline')
+  	);
+ 	drupal_add_js('
+ 		var feedback_widget_options = {};
+
+		  feedback_widget_options.display = "overlay";
+		  feedback_widget_options.company = "gottago";
+		  feedback_widget_options.placement = "left";
+		  feedback_widget_options.color = "#41A6D9";
+		  feedback_widget_options.style = "problem";
+
+  		var feedback_widget = new GSFN.feedback_widget(feedback_widget_options);
+		',
+    	array('type' => 'inline')
+  	);
+}

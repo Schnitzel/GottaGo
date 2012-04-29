@@ -22,6 +22,7 @@ function gottago_forms_form_alter(&$form, &$form_state, $form_id) {
   }
   elseif ($form_id == 'user_login'){
     drupal_set_title("Login");
+    $form['#submit'][] = 'gottago_forms_redirect_submit';
   }
 
 

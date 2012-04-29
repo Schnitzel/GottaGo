@@ -340,6 +340,10 @@ input[type=submit]:hover {
 	list-style: none;
 }
 
+.block-main-menu ul li {
+	float:left;
+}
+
 .block-main-menu a {
 	color:#6EC83C;
 }
@@ -350,8 +354,19 @@ input[type=submit]:hover {
 
 /* @end */
 
+/* @group About Page */
+
+.node-type-page .block-system-main {
+	font-size: 18px;
+}
 
 
+.node-type-page p {
+	margin: 0 0 20px 0;
+}
+
+
+/* @end */
 
 /* @group User Register/Login/Edit */
 
