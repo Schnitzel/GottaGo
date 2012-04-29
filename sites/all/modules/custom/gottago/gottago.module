@@ -383,7 +383,7 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
     $form[GOTTAGO_FIELD_STATION]['#suffix'] = '<div id="edit-field-line"></div><div class="clearfix"></div>';
   }
   $form[GOTTAGO_FIELD_LINE][LANGUAGE_NONE]['#title'] = t('I want to take');
-  
+
   // Also hide the delay field if we do not have any valid default value.
   if (isset($radio_options) && count($radio_options) && ($default_value || $form_state['values'][GOTTAGO_FIELD_LINE][LANGUAGE_NONE][0]['value'])) {
     $form[GOTTAGO_FIELD_DELAY]['#access'] = TRUE;
@@ -398,12 +398,12 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
 
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/modules/gottago_client/statusquery.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/gottago.js';
-  
+
   $form[GOTTAGO_FIELD_DESCRIPTION][LANGUAGE_NONE][0]['value']['#attributes'] = array(
     'placeholder' => t('e.g. "Home" or "Office"')
   );
   $form[GOTTAGO_FIELD_DESCRIPTION][LANGUAGE_NONE][0]['value']['#size'] = 0;
-  
+
   $form['actions']['submit']['#value'] = t('Go for it!');
 }
 
@@ -555,6 +555,7 @@ function gottago_get_id_for_station($station) {
     return $station;
   }
   if (!isset($station_ids[$station])) {
+    $station = urlencode($station);
     $result = drupal_http_request('http://transport.opendata.ch/api.php/v1/locations?query=' . $station . '&type=station');
     if ($result->code == 200) {
       $data = json_decode(($result->data));
