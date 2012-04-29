@@ -118,12 +118,12 @@ function GottaGo(status_indicator, query_object){
         // Try again in 1min and hope service is up again
         status_indicator.schedule(status_indicator.query, 60*1000);
     };
-    
+
     this.destroy = function() {
       status_indicator.clearAll();
       status_indicator.reset();
     }
-    
+
     status_indicator.query();
 
 

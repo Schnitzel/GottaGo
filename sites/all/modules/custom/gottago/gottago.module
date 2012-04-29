@@ -127,7 +127,7 @@ function gottago_status_direct() {
   $gottago_query_array = array(
     'station' => $_GET['station'],
     'line' => $_GET['line'],
-    'delay' => $_GET['delay']
+    'delay' => ($_GET['delay'] * 60)
   );
   $result = gottago_api('go_status', $gottago_query_array);
 
@@ -167,7 +167,7 @@ function gottago_api($type, $gottago_query_array = NULL, $gottago_node = NULL) {
       $gottago_query_array = array(
         'station' => $gottago_node->{GOTTAGO_FIELD_STATION}[LANGUAGE_NONE][0]['value'],
         'line' => $gottago_node->{GOTTAGO_FIELD_LINE}[LANGUAGE_NONE][0]['value'],
-        'delay' => $gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'],
+        'delay' => ($gottago_node->{GOTTAGO_FIELD_DELAY}[LANGUAGE_NONE][0]['value'] * 60),
         'description' => $gottago_node->field_description[LANGUAGE_NONE][0]['value']
       );
       $return = call_user_func_array('gottago_api_' . $type, array($gottago_query_array));
@@ -374,7 +374,7 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   }
 
   $form['field_delay']['#prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
-  $form['field_delay']['#suffix'] = '<span class="field-delay-suffix">' . t(' seconds to get to the station') . '</span> ';
+  $form['field_delay']['#suffix'] = '<span class="field-delay-suffix">' . t(' minutes to get to the station') . '</span> ';
 
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/modules/gottago_client/statusquery.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/gottago.js';
