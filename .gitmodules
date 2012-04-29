@@ -40,3 +40,9 @@
 [submodule "sites/all/modules/views_datasource"]
 	path = sites/all/modules/views_datasource
 	url = git://git.drupal.org/project/views_datasource.git
+[submodule "sites/all/modules/wysiwyg"]
+	path = sites/all/modules/wysiwyg
+	url = git://git.drupal.org/project/wysiwyg.git
+[submodule "sites/all/modules/ckeditor"]
+	path = sites/all/modules/ckeditor
+	url = git://git.drupal.org/project/ckeditor.git
