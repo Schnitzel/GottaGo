@@ -345,14 +345,17 @@ function gottago_get_next_statuses($next_departure, $second_next_departure, $got
  */
 function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   drupal_set_title(t('Never miss your connection again. Here we go:'));
-  
   $form['field_station']['und'][0]['value']['#ajax'] = array(
     'callback' => 'gottago_ajax_callback_field_station_select',
     'wrapper' => 'gottago-line',
     'event' => 'blur',
   );
   $form['field_station']['und'][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
-
+  $form['field_station']['und'][0]['value']['#attributes'] = array(
+    'placeholder' => t('Name of station')
+  );
+  $form['field_station']['und'][0]['value']['#size'] = 0;
+  $form['field_station']['#prefix'] = '<span class="field-station-prefix">' . t('I want to leave from') . '</span> ';
   $form['field_station']['#suffix'] = '<div id="gottago-line" class="gottago-line"></div>';
   if (isset($form_state['values']['field_station']['und'][0]['value'])) {
     $stationid = $form_state['values']['field_station']['und'][0]['value'];
