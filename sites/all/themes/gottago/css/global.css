@@ -175,11 +175,21 @@ input[type=password]{
 }
 
 html.js input.form-autocomplete {
-  background-position: 100% 20px; /* LTR */
+  background: none;
 }
 
 html.js input.throbbing {
-  background-position: 100% -18px; /* LTR */
+  background: url(../images/ajax-loader.gif) no-repeat 100% 16px;
+}
+
+.ajax-progress{
+  position: relative;
+}
+
+.ajax-progress, .ajax-progress-throbber,
+.ajax-progress .throbber{
+  position: absolute;
+  background: url(../images/ajax-loader.gif) no-repeat;
 }
 
 #gottago_status_indicator{
@@ -327,8 +337,7 @@ input[type=submit]:hover {
 }
 
 .block-gottago .content a:hover {
-	color: #6EC83C;
-	background-color: white;
+	background-color: #82ee4d;
 }
 
 .block-main-menu {
