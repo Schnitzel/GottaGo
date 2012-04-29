@@ -195,6 +195,10 @@ input[type=submit]:hover {
 
 /* @group Header */
 
+.region-branding {
+	margin-bottom: 30px;
+}
+
 .branding-data {
 	float:left;
 }
@@ -248,17 +252,17 @@ file will hold styles for the mobile version of your website (mobile first). */
     padding:0.25em;
     margin: 1em;
 }
-#status_indicator.error,
-.status_indicator.error {
-     background: red;
+#status_indicator.err,
+.status_indicator.err {
+     color: red;
 }
 #status_indicator.off,
 .status_indicator.off {}
 #status_indicator.go,
 .status_indicator.go {
-    background:lightgreen;
+    color:lightgreen;
 }
 #status_indicator.no_go,
 .status_indicator.no_go {
-    background:lightcoral;
+    color:lightcoral;
 }
