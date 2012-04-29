@@ -14,6 +14,7 @@
   jQuery(function() {
     jQuery('#edit-field-station-und-0-value').width(jQuery('#gottago-node-form').width() - jQuery('.field-station-prefix').width() - 80);
     jQuery('.field-widget-options-buttons .option').live('click', function(){
+    	jQuery(this).siblings('input').attr('checked', true);
       jQuery('.field-widget-options-buttons .option').removeClass('selected');
       jQuery(this).addClass('selected');
     });
