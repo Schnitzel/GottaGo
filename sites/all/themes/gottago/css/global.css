@@ -84,8 +84,14 @@ input{
 }
 
 
-.page-node-edit .form-type-textfield label{
+.page-node-edit .form-type-textfield label,
+.page-node-add .form-type-textfield label{
   display: none;
+}
+
+.page-node-edit .form-item-field-description-und-0-value label,
+.page-node-add .form-item-field-description-und-0-value label {
+	display: block;
 }
 
 input[type=text],
@@ -162,6 +168,12 @@ html.js input.form-autocomplete{
 	font-size: 16px;
 }
 
+.new_gottago_link {
+	position: absolute;
+	right: 0;
+	top: 11px;
+}
+
 /* @end */
 
 /* @group Header */
@@ -172,10 +184,11 @@ html.js input.form-autocomplete{
 
 .block-gottago {
 	float: right;
-	margin: 63px 50px 0 0;
+	margin: 63px 0 0 0;
 }
 
-.block-gottago .content a {
+.block-gottago .content a,
+.new_gottago_link a {
 	color: white;
 	background-color: #6EC83C;
 	padding: 5px 11px;
@@ -185,7 +198,8 @@ html.js input.form-autocomplete{
 	-moz-border-radius: 5px;
 }
 
-.block-gottago .content a:hover {
+.block-gottago .content a:hover,
+.new_gottago_link a:hover {
 	color: #6EC83C;
 	background-color: white;
 }
