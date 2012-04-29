@@ -49,3 +49,6 @@
 [submodule "sites/all/modules/google_analytics"]
 	path = sites/all/modules/google_analytics
 	url = git://git.drupal.org/project/google_analytics.git
+[submodule "sites/all/modules/i18n"]
+	path = sites/all/modules/i18n
+	url = git://git.drupal.org/project/i18n.git
