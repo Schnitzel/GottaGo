@@ -160,6 +160,23 @@ html.js input.form-autocomplete{
 	display: none;
 }
 
+input[type=submit] {
+	background-color:#41A6D9;
+	color:white;
+	padding: 5px 11px;
+	margin-right:10px;
+	border: none;
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+input[type=submit]:hover {
+	background-color:white;
+	color:#41A6D9;
+	cursor: pointer;
+}
+
 /* @end */
 
 /* @group Overview */
@@ -213,6 +230,10 @@ html.js input.form-autocomplete{
 
 .page-user .block-system-main {
 	font-size: 20px;
+}
+
+.password-strength {
+	display: none;
 }
 
 /* @end */
