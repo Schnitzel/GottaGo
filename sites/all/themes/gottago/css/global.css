@@ -299,6 +299,10 @@ input[type=submit]:hover {
 	list-style: none;
 }
 
+.block-main-menu ul li {
+	float:left;
+}
+
 .block-main-menu a {
 	color:#6EC83C;
 }
