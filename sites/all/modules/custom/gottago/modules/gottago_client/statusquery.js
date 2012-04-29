@@ -20,6 +20,7 @@ function GottaGo(status_indicator, query_object){
         not_configured: "Der eingegebene Schlüssel wurde noch nicht konfiguriert. Bitte auf der Website einloggen und Schlüssel konfigurieren.",
         no_data: "Es sind keine Daten für den angegebenen Schlüssel verfügbar."
     };
+
     var status_handlers = {
         go: function handle_go(json){
             status_indicator.text("Jetzt gehen.").show();
@@ -53,9 +54,9 @@ function GottaGo(status_indicator, query_object){
     };
 
     if (using_gootago_key) {
-        var url = '/gottago/gottago_status/' + id;
+        var url = '/gottago_status/' + encodeURIComponent(id);
     } else {
-        var url = '/gottago/gottago_status_direct/' + station + '/' + line + '/' + delay;
+        var url = '/gottago_status_direct?station=' + encodeURIComponent(station) + '&line=' + encodeURIComponent(line) + '&delay=' + encodeURIComponent(delay);
     }
 
     status_indicator.query = function (){
@@ -117,6 +118,12 @@ function GottaGo(status_indicator, query_object){
         // Try again in 1min and hope service is up again
         status_indicator.schedule(status_indicator.query, 60*1000);
     };
+    
+    this.destroy = function() {
+      timeouts.clearAll();
+      status_indicator.reset();
+    }
+    
     status_indicator.query();
 
 
