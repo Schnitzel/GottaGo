@@ -573,3 +573,35 @@ function gottago_get_line_name($departure) {
   // All other cases, return the first 3 strings.
   return substr($departure->name, 0, 3);
 }
+
+/**
+ * Implements hook_block_info().
+ */
+function gottago_block_info() {
+
+  $blocks = array();
+
+  $blocks[0]['info'] = t('User custom menu');
+  $blocks[0]['cache'] = DRUPAL_NO_CACHE;
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function gottago_block_view($delta = '') {
+  global $user;
+  $block = array();
+    switch ($delta){
+      case 0: {
+        if (user_is_logged_in()) {
+          $block['content'] = '<span class="my_account">' . l(t('My Account'), 'user/' . $user->uid . '/edit' ) . '</span><span class="user_logout">' . l(t('Log out'),'user/logout') . '</span>';
+        } else {
+          $block['content'] = '<span class="login">' . l(t('Login'), 'user/login' ) . '</span><span class="register">' . l(t('Register'),'user/register') . '</span>';
+        }
+        break;
+      }
+    }
+  return $block;
+}

@@ -16,22 +16,22 @@ function GottaGo(status_indicator, query_object){
         var delay = query_object['delay'];
     }
     var error_messages = {
-        no_api: "Statusinformationen sind derzeit nicht verfügbar. Bitte zu einem späteren Zeitpunkt erneut versuchen.",
-        not_configured: "Der eingegebene Schlüssel wurde noch nicht konfiguriert. Bitte auf der Website einloggen und Schlüssel konfigurieren.",
-        no_data: "Es sind keine Daten für den angegebenen Schlüssel verfügbar."
+        no_api: Drupal.t("Statusinformation currently not available. Please try again later."),
+        not_configured: Drupal.t("This key is not yet configured. Please go to gottago.ch and create a key."),
+        no_data: Drupal.t("There are no data available for this key.")
     };
 
     var status_handlers = {
         go: function handle_go(json){
-            status_indicator.text("Jetzt gehen.").show();
+            status_indicator.text(Drupal.t("Go")).show();
         },
         no_go: function handle_no_go(json){
-            status_indicator.text("Zu spät.").show();
+            status_indicator.text(Drupal.t("NoGo")).show();
         },
         off: function handle_off(json){
             if(!isNaN(json.status_changes.go)) {
                 var minutesUntilGo = Math.round(json.status_changes.go/60);
-                status_indicator.text(" Noch "+minutesUntilGo+" Minuten.").show();
+                status_indicator.text(Drupal.t("@minutesUntilGo minutes to go", {"@minutesUntilGo": minutesUntilGo})).show();
 
                 // Always show correct relative time
                 if(minutesUntilGo>1){
@@ -50,7 +50,7 @@ function GottaGo(status_indicator, query_object){
      * @return jQuery Wrapped status indicator element
      */
     status_indicator.reset = function(){
-        return this.text('').removeClass('error off go no_go').hide();
+        return this.text('').removeClass('err off go no_go').hide();
     };
 
     if (using_gootago_key) {
@@ -81,12 +81,12 @@ function GottaGo(status_indicator, query_object){
         status_indicator.reset();
         status_indicator.clearAll();
         if(json.constructor!==({}).constructor){
-            status_indicator.addClass('error').text("Falsche Daten vom Server erhalten.").show();
+            status_indicator.addClass('err').text(Drupal.t("Wrong data from the server.")).show();
             return;
         }
 
         if(json.error){
-            status_indicator.addClass('error').text(error_messages[json.error] || "Unbekannter Fehler").show();
+            status_indicator.addClass('err').text(error_messages[json.error] || Drupal.t("Unknown error")).show();
         } else {
             // Render current status
             status_indicator.reset().addClass(json.status);
@@ -112,7 +112,7 @@ function GottaGo(status_indicator, query_object){
 
     status_indicator.handleRequestError = function(){
         status_indicator.reset();
-        status_indicator.addClass('error').text("Server nicht erreichbar.").show();
+        status_indicator.addClass('err').text(Drupal.t("Server not reachable.")).show();
 
         status_indicator.clearAll();
         // Try again in 1min and hope service is up again

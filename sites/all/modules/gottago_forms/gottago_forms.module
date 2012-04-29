@@ -9,12 +9,16 @@ function gottago_forms_form_alter(&$form, &$form_state, $form_id) {
     $form['title']['#required'] = FALSE;
     $form['actions']['submit']['#submit'][] = 'gottago_forms_redirect_submit';
   }
+  elseif ($form_id == 'user_profile_form') {
+    drupal_set_title(t('My Account'));
+  }
+
 }
 
 function gottago_forms_node_presave($node) {
   if($node->is_new){
     do {
-      $identifier = user_password(4);
+      $identifier = strtolower(user_password(4));
     } while (_gottago_node_title_exists($identifier));
     $node->title = $identifier;
   }
