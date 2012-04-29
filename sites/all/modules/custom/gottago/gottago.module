@@ -343,6 +343,7 @@ function gottago_get_next_statuses($next_departure, $second_next_departure, $got
  * Implements hook_form_alter().
  */
 function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
+  drupal_set_title(t('Never miss your connection again. Here we go:'));
   $form['field_station']['und'][0]['value']['#ajax'] = array(
     'callback' => 'gottago_ajax_callback_field_station_select',
     'wrapper' => 'edit-field-line',
@@ -350,6 +351,11 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
     'method' => 'html',
   );
   $form['field_station']['und'][0]['value']['#autocomplete_path'] = 'gottago/autocomplete';
+  $form['field_station']['und'][0]['value']['#attributes'] = array(
+    'placeholder' => t('Name of station')
+  );
+  $form['field_station']['und'][0]['value']['#size'] = 0;
+  $form['field_station']['#prefix'] = '<span class="field-station-prefix">' . t('I want to leave from') . '</span> ';
   $default_value = NULL;
   if (isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value']) || isset($form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'])) {
     $stationid = isset($form_state['values']['field_station'][LANGUAGE_NONE][0]['value'])?$form_state['values']['field_station'][LANGUAGE_NONE][0]['value']:$form['field_station'][LANGUAGE_NONE][0]['value']['#default_value'];
@@ -365,6 +371,10 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   } else {
     $form['field_line']['#access'] = FALSE;
   }
+
+  $form['field_delay']['#prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
+  $form['field_delay']['#suffix'] = '<span class="field-delay-suffix">' . t(' seconds to get to the station') . '</span> ';
+
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/modules/gottago_client/statusquery.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/gottago.js';
   $form['#suffix'] .= '<div id="gottago_status_indicator"> </div>';
@@ -423,7 +433,7 @@ function gottago_get_lines_for_station($stationid = FALSE){
   foreach ($response->stationboard as $key => $departure) {
     $line_identifier = gottago_get_line_name($departure) . "|" . $departure->to;
     if (!in_array($line_identifier, $lines)) {
-      $lines[$line_identifier] = t('@departure_name direction @departure_to', array('@departure_name' => $departure->name, '@departure_to' => $departure->to));
+      $lines[$line_identifier] = '<span class="line-name">' . gottago_get_line_name($departure) . '</span><span class="line-direction">' . $departure->to . '</span>';
     }
   }
   return $lines;
@@ -526,21 +536,16 @@ function gottago_get_id_for_station($station) {
 }
 
 function gottago_get_line_name($departure) {
-  // We consider the first 3 letters if:
-  // name starts with 'S' OR
-  // name starts with 'IR' OR
-  // name starts with 'TGV' OR
-  // name starts with 'BUS' OR
-  // name starts with 'NFB' OR
-  // name starts with 'BAT' OR
-  // name starts with 'N'
+  // We consider the whole name if:
+  // name starts with 'Tram' OR
+  // name starts with 'Bus' OR
+  // name starts with 'Met' OR
+  // name starts with 'Tro'
   // @todo: improve this check.
-  if (strpos($departure->name, 'S') === 0 || strpos($departure->name, 'IR') === 0 ||
-      strpos($departure->name, 'TGV') === 0 || strpos($departure->name, 'BUS') === 0 ||
-      strpos($departure->name, 'NFB') === 0 || strpos($departure->name, 'BAT') === 0 ||
-      strpos($departure->name, 'N') === 0) {
-    return substr($departure->name, 0, 3);
+  if (strpos($departure->name, 'Tram') === 0 || strpos($departure->name, 'Bus') === 0 ||
+      strpos($departure->name, 'Met') === 0 || strpos($departure->name, 'Tro') === 0) {
+    return $departure->name;
   }
-  // All other cases, return the whole name.
-  return $departure->name;
+  // All other cases, return the first 3 strings.
+  return substr($departure->name, 0, 3);
 }
