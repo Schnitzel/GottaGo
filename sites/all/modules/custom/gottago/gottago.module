@@ -437,7 +437,7 @@ function gottago_get_lines_for_station($stationid = FALSE){
   foreach ($response->stationboard as $key => $departure) {
     $line_identifier = $departure->name . "|" . $departure->to;
     if (!in_array($line_identifier, $lines)) {
-      $lines[$line_identifier] = t('@departure_name direction @departure_to', array('@departure_name' => $departure->name, '@departure_to' => $departure->to));
+      $lines[$line_identifier] = '<span class="line-name">' . $departure->name . '</span><span class="line-direction">' . $departure->to . '</span>';
     }
   }
   return $lines;
