@@ -29,7 +29,7 @@ function gottago_forms_form_alter(&$form, &$form_state, $form_id) {
 }
 
 function gottago_forms_node_presave($node) {
-  if($node->is_new){
+  if($node->is_new && $node->type == "gottago"){
     do {
       $identifier = strtolower(user_password(4));
     } while (_gottago_node_title_exists($identifier));
