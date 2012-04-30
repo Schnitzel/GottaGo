@@ -136,6 +136,17 @@ div.form-item.form-item-field-description-und-0-value{
 	clear: both;
 }
 
+.page-node-add-gottago .current_state,
+.page-node-edit .current_state {
+  margin-top:2em;
+}
+
+.page-node-add-gottago #gottago_status_indicator,
+.page-node-edit #gottago_status_indicator {
+  margin-top:0;
+}
+
+
 .page-node-add-gottago .form-item-name {
 	display: none;
 }
