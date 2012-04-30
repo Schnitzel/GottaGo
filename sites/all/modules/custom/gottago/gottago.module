@@ -404,7 +404,7 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   );
   $form[GOTTAGO_FIELD_DESCRIPTION][LANGUAGE_NONE][0]['value']['#size'] = 0;
 
-  $form['actions']['submit']['#value'] = t('Go for it!');
+  $form['actions']['submit']['#value'] = t('Save for later use');
 }
 
 function gottago_autocomplete($string) {

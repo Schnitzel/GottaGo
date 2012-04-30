@@ -139,6 +139,7 @@ div.form-item.form-item-field-description-und-0-value{
 .page-node-add-gottago .current_state,
 .page-node-edit .current_state {
   margin-top:2em;
+  display: block;
 }
 
 .page-node-add-gottago #gottago_status_indicator,
