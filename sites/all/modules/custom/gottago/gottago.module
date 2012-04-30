@@ -394,7 +394,7 @@ function gottago_form_gottago_node_form_alter(&$form, &$form_state, $form_id) {
   }
 
   $form[GOTTAGO_FIELD_DELAY][LANGUAGE_NONE][0]['value']['#field_prefix'] = '<span class="field-delay-prefix">' . t('It takes me ') . '</span> ';
-  $form[GOTTAGO_FIELD_DELAY][LANGUAGE_NONE][0]['value']['#field_suffix'] = '<span class="field-delay-suffix">' . t(' minutes to get to the station') . '</span> <div id="gottago_status_indicator"> </div>';
+  $form[GOTTAGO_FIELD_DELAY][LANGUAGE_NONE][0]['value']['#field_suffix'] = '<span class="field-delay-suffix">' . t(' minutes to get to the station') . '</span> <div id="gottago_status_indicator_wrapper"><span>' . t('Current state') . '</span><div id="gottago_status_indicator"> </div></div>';
 
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/modules/gottago_client/statusquery.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'gottago') . '/gottago.js';
