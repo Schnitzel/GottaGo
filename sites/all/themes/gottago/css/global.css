@@ -184,17 +184,34 @@ html.js input.form-autocomplete {
 }
 
 html.js input.throbbing {
-  background: url(../images/ajax-loader.gif) no-repeat 100% 16px;
+  background: url(../images/ajax-loader.gif) no-repeat 100% 8px;
 }
 
 .ajax-progress{
   position: relative;
 }
 
-.ajax-progress, .ajax-progress-throbber,
 .ajax-progress .throbber{
+  background: none;
+}
+
+.ajax-progress{
+  position: relative;
+  width: 0;
+  height: 0;
+  display: inline;
+}
+
+.ajax-progress.ajax-progress-throbber .throbber{
   position: absolute;
   background: url(../images/ajax-loader.gif) no-repeat;
+  width: 32px;
+  height: 32px;
+}
+
+.edit-field-line .ajax-progress.ajax-progress-throbber .throbber{
+	right: 10px;
+	top: 10px;
 }
 
 #gottago_status_indicator{
