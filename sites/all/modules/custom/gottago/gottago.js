@@ -15,14 +15,12 @@
         if ($('input[name="field_description[und][0][value]"]').parent().is(':hidden')) {
           $('input[name="field_description[und][0][value]"]').parent().slideDown();
           $('#edit-register').slideDown();
-          $('#edit-login').slideDown();
           return false;
         }
       });
       if ($('input[name="field_description[und][0][value]"]', context).val() == '') {
         $('input[name="field_description[und][0][value]"]', context).parent().hide();
         $('#edit-register', context).hide();
-        $('#edit-login', context).hide();
         $('#edit-actions', context).hide();
       }
       scrollToDelay();
@@ -46,7 +44,7 @@
       gottaGo = new GottaGo($('#gottago_status_indicator'), { station: station, line: line, delay: delay});
       // If the user is logged in (if the user-login fieldset is not in the
       // page), then show the description field.
-      if (!$('#edit-login').get(0)) {
+      if (!$('#edit-register').get(0)) {
         $('input[name="field_description[und][0][value]"]').parent().show();
       }
     }
