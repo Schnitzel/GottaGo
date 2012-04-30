@@ -58,3 +58,6 @@
 [submodule "sites/all/modules/l10n_update"]
 	path = sites/all/modules/l10n_update
 	url = git://git.drupal.org/project/l10n_update.git
+[submodule "sites/all/modules/globalredirect"]
+	path = sites/all/modules/globalredirect
+	url = git://git.drupal.org/project/globalredirect.git
