@@ -61,3 +61,6 @@
 [submodule "sites/all/modules/globalredirect"]
 	path = sites/all/modules/globalredirect
 	url = git://git.drupal.org/project/globalredirect.git
+[submodule "sites/all/modules/masquerade"]
+	path = sites/all/modules/masquerade
+	url = git://git.drupal.org/project/masquerade.git
