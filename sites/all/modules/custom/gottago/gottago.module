@@ -606,9 +606,9 @@ function gottago_block_view($delta = '') {
     switch ($delta){
       case 0: {
         if (user_is_logged_in()) {
-          $block['content'] = '<span class="my_account">' . l(t('My Account'), 'user/' . $user->uid . '/edit' ) . '</span><span class="user_logout">' . l(t('Log out'),'user/logout') . '</span>';
+          $block['content'] = '<ul><li class="my_account leaf">' . l(t('My Account'), 'user/' . $user->uid . '/edit' ) . '</li><li class="user_logout leaf">' . l(t('Log out'),'user/logout') . '</li></ul>';
         } else {
-          $block['content'] = '<span class="login">' . l(t('Login'), 'user/login' ) . '</span><span class="register">' . l(t('Register'),'user/register') . '</span>';
+          $block['content'] = '<ul><li class="login leaf">' . l(t('Login'), 'user/login' ) . '</li><li class="register leaf">' . l(t('Register'),'user/register') . '</li></ul>';
         }
         break;
       }

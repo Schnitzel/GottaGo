@@ -364,13 +364,15 @@ input[type=submit]:hover {
 	float:left;
 }
 
+.block-main-menu,
 .block-gottago {
 	float: right;
 	margin: 63px 0 0 0;
 }
 
-.block-gottago .content a {
-	color: white;
+.block-main-menu a,
+.block-gottago a {
+	color: #fff;
 	background-color: #6EC83C;
 	padding: 5px 11px;
 	margin-left:10px;
@@ -379,30 +381,25 @@ input[type=submit]:hover {
 	-moz-border-radius: 5px;
 }
 
+.block-main-menu a:hover,
 .block-gottago .content a:hover {
 	background-color: #82ee4d;
 }
 
-.block-main-menu {
-	position: absolute;
-	right: 0;
-}
-
 .block-main-menu ul,
-.block-main-menu ul li{
+.block-main-menu ul li,
+.block-gottago ul,
+.block-gottago ul li{
 	list-style: none;
 }
 
-.block-main-menu ul li {
+.block-main-menu ul li,
+.block-gottago ul li {
 	float:left;
 }
 
-.block-main-menu a {
-	color:#6EC83C;
-}
-
-.block-main-menu a:hover {
-	text-decoration:underline;
+ul.menu li{
+  margin: 0;
 }
 
 /* @end */
