@@ -36,7 +36,9 @@
 
 }
 
-body{
+body,
+input,
+textarea{
   font: 16px/1.4375 "GTWalsheimRegular",sans-serif;
   color: #666;
   text-rendering: optimizeLegibility;
@@ -78,6 +80,10 @@ a:visited{
 
 input{
   font-size: 1em;
+}
+
+#autocomplete{
+  font-size: 0.5em;
 }
 
 .field-station-prefix{
@@ -191,7 +197,6 @@ div.form-item.form-item-field-description-und-0-value{
 
 input[type=text],
 input[type=password]{
-  border: 2px solid #ededed;
   color: #b3b3b3;
 }
 
