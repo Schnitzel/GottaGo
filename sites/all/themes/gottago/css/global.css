@@ -462,3 +462,12 @@ input[type=submit]:hover {
 .status_indicator.no_go {
     color:lightcoral;
 }
+
+#zone-footer{
+  min-height: 27px;
+}
+
+#region-footer-second{
+  position: absolute;
+  bottom: 0;
+}
