@@ -386,6 +386,7 @@ input[type=submit]:hover {
 	background-color: #82ee4d;
 }
 
+ul.language-switcher-locale-url,
 .block-main-menu ul,
 .block-main-menu ul li,
 .block-gottago ul,
@@ -393,13 +394,22 @@ input[type=submit]:hover {
 	list-style: none;
 }
 
+ul.language-switcher-locale-url li,
 .block-main-menu ul li,
 .block-gottago ul li {
 	float:left;
+  margin: 0;
+  padding: 0;
 }
 
-ul.menu li{
-  margin: 0;
+ul.language-switcher-locale-url{
+  position: absolute;
+  right: 0;
+  top: 10px;
+}
+
+ul.language-switcher-locale-url li{
+  margin-left: 5px;
 }
 
 /* @end */
